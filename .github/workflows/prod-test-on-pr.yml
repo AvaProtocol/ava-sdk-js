@@ -6,9 +6,18 @@ name: Run Production Tests
 #
 # One gateway serves every chain and routes each workflow part by its own
 # chainId, so there is nothing per-chain to parametrise here; the suites
-# hardcode Sepolia for block seeds, fixtures and receipts. The matrix shards by
-# suite, like dev-test-on-pr.yml: one failing suite never skips the others, and
-# parallel shards never share a funded-wallet EntryPoint nonce (#263).
+# hardcode Sepolia for block seeds, fixtures and receipts. Shards are suites,
+# like dev-test-on-pr.yml, so one failing suite never skips the others.
+#
+# Two jobs. The suites that never send a funded UserOp (workflows, triggers,
+# templates) run side by side. The three that do (core, executions, nodes)
+# run one after another in a single job: production caps an owner at three
+# Sepolia wallets, and the test owner's cap is already met by the funded
+# salt-0 runner plus two stray unique-salt wallets, so there is exactly one
+# funded sender and parallel shards would race on its EntryPoint nonce (#263).
+#
+# GitHub Actions has no YAML anchors, so the two jobs repeat their env and
+# setup steps. Keep them identical.
 on:
   workflow_dispatch:
     inputs:
@@ -31,31 +40,22 @@ jobs:
     name: Plan shards
     runs-on: ubuntu-latest
     outputs:
-      shards: ${{ steps.plan.outputs.shards }}
+      parallel: ${{ steps.plan.outputs.parallel }}
     steps:
-      - name: Select shards
+      - name: Select parallel shards
         id: plan
         env:
           SUITE: ${{ inputs.suite }}
         run: |
-          # Static MA v2 salt per shard so parallel UserOps do not share an
-          # EntryPoint nonce (#263). Must stay inside 0/1/2 (production's
-          # wallet cap) and match the map in tests/README.md.
-          all='[
-            {"suite":"core","funded_salt":"0"},
-            {"suite":"workflows","funded_salt":"0"},
-            {"suite":"executions","funded_salt":"1"},
-            {"suite":"triggers","funded_salt":"0"},
-            {"suite":"nodes","funded_salt":"2"},
-            {"suite":"templates","funded_salt":"0"}
-          ]'
-          shards=$(echo "$all" | jq -c --arg s "$SUITE" '[.[] | select($s == "all" or .suite == $s)]')
-          echo "shards=$shards" >> "$GITHUB_OUTPUT"
-          echo "Running: $(echo "$shards" | jq -r '[.[].suite] | join(", ")')"
+          all='["workflows","triggers","templates"]'
+          selected=$(echo "$all" | jq -c --arg s "$SUITE" '[.[] | select($s == "all" or . == $s)]')
+          echo "parallel=$selected" >> "$GITHUB_OUTPUT"
+          echo "Parallel shards: $selected"
 
   production-test:
     name: "Production / ${{ matrix.suite }}"
     needs: plan
+    if: needs.plan.outputs.parallel != '[]'
     runs-on: ubuntu-latest
     # One GitHub environment for the live gateway: AVS_API_KEY (Sepolia admin
     # JWT), CHAIN_ENDPOINT (a Sepolia RPC) and PARTNER_ASSERTION_PRIVATE_KEY
@@ -64,15 +64,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.shards) }}
+        suite: ${{ fromJSON(needs.plan.outputs.parallel) }}
     env:
       AVS_REST_URL: https://api.avaprotocol.org/api/v1
       # The test utilities key on TEST_ENV=railway for a production gateway:
       # isolated owners and fixed fixture salts under the 3-wallet cap, and
       # the gateway-routed multichain suites enabled.
       TEST_ENV: railway
-      # Wins over Jest testPath inference in fundedWalletSalt().
-      FUNDED_WALLET_SALT: ${{ matrix.funded_salt }}
+      # The only funded runner registered for the production owner; see the
+      # header. Wins over Jest testPath inference in fundedWalletSalt().
+      FUNDED_WALLET_SALT: "0"
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
       CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
@@ -125,4 +126,103 @@ jobs:
         run: yarn build
 
       - name: "Run test:${{ matrix.suite }}"
-        run: yarn test:${{ matrix.suite }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:${{ matrix.suite }} 2>&1 | tee "logs/${{ matrix.suite }}.log"
+
+      - name: Upload suite log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-${{ matrix.suite }}-log
+          path: logs/*.log
+          if-no-files-found: ignore
+
+  production-userop:
+    name: "Production / core, executions, nodes (one at a time)"
+    if: inputs.suite == 'all' || contains(fromJSON('["core","executions","nodes"]'), inputs.suite)
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AVS_REST_URL: https://api.avaprotocol.org/api/v1
+      TEST_ENV: railway
+      FUNDED_WALLET_SALT: "0"
+      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
+      PARTNER_ASSERTION_PRIVATE_KEY: ${{ secrets.PARTNER_ASSERTION_PRIVATE_KEY }}
+      PARTNER_ASSERTION_ISSUER: sdk-ci
+      PARTNER_ASSERTION_AUDIENCE: avs-gateway-prod
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check required environment
+        run: |
+          missing=0
+          for name in AVS_API_KEY CHAIN_ENDPOINT PARTNER_ASSERTION_PRIVATE_KEY TEST_PRIVATE_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is empty"
+              missing=1
+            else
+              echo "$name: set"
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+          case "$CHAIN_ENDPOINT" in
+            http*) url="$CHAIN_ENDPOINT" ;;
+            *) url="https://$CHAIN_ENDPOINT" ;;
+          esac
+          chain_id=$(curl -sS --max-time 20 -X POST -H 'content-type: application/json' \
+            --data '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' "$url" | jq -r '.result')
+          echo "CHAIN_ENDPOINT chain id: $chain_id"
+          if [ "$chain_id" != "0xaa36a7" ]; then
+            echo "::error::CHAIN_ENDPOINT serves chain $chain_id; the suites need Sepolia (0xaa36a7)"
+            exit 1
+          fi
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build the SDK
+        id: build
+        run: yarn build
+
+      # Each suite runs even when an earlier one failed; the job still fails
+      # if any of them did.
+      - name: Run test:core
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && (inputs.suite == 'all' || inputs.suite == 'core') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:core 2>&1 | tee logs/core.log
+
+      - name: Run test:executions
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && (inputs.suite == 'all' || inputs.suite == 'executions') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:executions 2>&1 | tee logs/executions.log
+
+      - name: Run test:nodes
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && (inputs.suite == 'all' || inputs.suite == 'nodes') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:nodes 2>&1 | tee logs/nodes.log
+
+      - name: Upload suite logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-userop-logs
+          path: logs/*.log
+          if-no-files-found: ignore

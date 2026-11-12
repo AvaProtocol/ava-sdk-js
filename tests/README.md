@@ -32,12 +32,16 @@ Suites map to `yarn test:<name>` and to CI matrix jobs:
 | `yarn test:templates` | `tests/v4/templates` |
 
 The production workflow (`.github/workflows/prod-test-on-pr.yml`, manual
-dispatch only) shards by these same suites, with the same funded salts as
-below, against `https://api.avaprotocol.org` with `TEST_ENV=railway` and a
-Sepolia `CHAIN_ENDPOINT`. `chainRpcProvider()` in `tests/utils/client.ts`
-verifies the endpoint's chain id once per process, so an RPC for any other
-chain fails every on-chain test with a clear message instead of seeding
-block triggers from the wrong chain.
+dispatch only) runs the same suites against `https://api.avaprotocol.org`
+with `TEST_ENV=railway` and a Sepolia `CHAIN_ENDPOINT`. Suites that never
+send a funded UserOp (workflows, triggers, templates) run in parallel; core,
+executions and nodes run one at a time on salt `0`, because the production
+owner's three-wallet cap is already met (salt `0` plus two stray unique-salt
+wallets from a 2026-11-12 run that predates the tight-cap wiring), so salts
+`1` and `2` cannot be registered there. `chainRpcProvider()` in
+`tests/utils/client.ts` verifies the endpoint's chain id once per process,
+so an RPC for any other chain fails every on-chain test with a clear message
+instead of seeding block triggers from the wrong chain.
 
 ## External template integration
 
