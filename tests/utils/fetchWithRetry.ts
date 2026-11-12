@@ -33,19 +33,25 @@ export function sleepUnlessAborted(
   signal?: AbortSignal | null,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(abortReason(signal));
+    if (!signal) {
+      setTimeout(resolve, ms);
+      return;
+    }
+    // Narrowed binding for the closures below.
+    const sig = signal;
+    if (sig.aborted) {
+      reject(abortReason(sig));
       return;
     }
     const onAbort = () => {
       clearTimeout(timer);
-      reject(abortReason(signal));
+      reject(abortReason(sig));
     };
     const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort);
+      sig.removeEventListener("abort", onAbort);
       resolve();
     }, ms);
-    signal?.addEventListener("abort", onAbort, { once: true });
+    sig.addEventListener("abort", onAbort, { once: true });
   });
 }
 
