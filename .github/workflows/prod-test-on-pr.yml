@@ -9,12 +9,13 @@ name: Run Production Tests
 # hardcode Sepolia for block seeds, fixtures and receipts. Shards are suites,
 # like dev-test-on-pr.yml, so one failing suite never skips the others.
 #
-# Two jobs. The suites that never send a funded UserOp (workflows, triggers,
-# templates) run side by side. The three that do (core, executions, nodes)
-# run one after another in a single job: production caps an owner at three
-# Sepolia wallets, and the test owner's cap is already met by the funded
-# salt-0 runner plus two stray unique-salt wallets, so there is exactly one
-# funded sender and parallel shards would race on its EntryPoint nonce (#263).
+# Two jobs. The suites that never touch the funded runner (workflows,
+# triggers) run side by side. The four that do (core, executions, nodes, and
+# templates, whose fund-moving deploys need the runner's grant) run one after
+# another in a single job: production caps an owner at three Sepolia wallets,
+# and the test owner's cap is already met by the funded salt-0 runner plus
+# two stray unique-salt wallets, so there is exactly one funded sender and
+# parallel shards would race on its EntryPoint nonce (#263).
 #
 # GitHub Actions has no YAML anchors, so the two jobs repeat their env and
 # setup steps. Keep them identical.
@@ -47,7 +48,7 @@ jobs:
         env:
           SUITE: ${{ inputs.suite }}
         run: |
-          all='["workflows","triggers","templates"]'
+          all='["workflows","triggers"]'
           selected=$(echo "$all" | jq -c --arg s "$SUITE" '[.[] | select($s == "all" or . == $s)]')
           echo "parallel=$selected" >> "$GITHUB_OUTPUT"
           echo "Parallel shards: $selected"
@@ -140,8 +141,8 @@ jobs:
           if-no-files-found: ignore
 
   production-userop:
-    name: "Production / core, executions, nodes (one at a time)"
-    if: inputs.suite == 'all' || contains(fromJSON('["core","executions","nodes"]'), inputs.suite)
+    name: "Production / core, executions, nodes, templates (one at a time)"
+    if: inputs.suite == 'all' || contains(fromJSON('["core","executions","nodes","templates"]'), inputs.suite)
     runs-on: ubuntu-latest
     environment: production
     # Only one dispatch may drive the salt-0 sender at a time, whichever ref
@@ -224,6 +225,13 @@ jobs:
           set -o pipefail
           mkdir -p logs
           yarn test:nodes 2>&1 | tee logs/nodes.log
+
+      - name: Run test:templates
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && (inputs.suite == 'all' || inputs.suite == 'templates') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:templates 2>&1 | tee logs/templates.log
 
       - name: Upload suite logs
         if: always()

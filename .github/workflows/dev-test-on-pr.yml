@@ -82,8 +82,10 @@ jobs:
             funded_salt: "0"
           - suite: nodes
             funded_salt: "2"
-          - suite: templates
-            funded_salt: "0"
+          # templates runs inside the core shard (below): its fund-moving
+          # template deploys need the funded runner's session grant, and two
+          # stacks installing that grant on the same on-chain wallet at once
+          # would race on its nonce and replace each other's entity.
 
     env:
       # The gateway/worker run in containers, so a stub server bound on the
@@ -309,6 +311,10 @@ jobs:
 
       - name: "Run test:${{ matrix.suite }}"
         run: yarn test:${{ matrix.suite }}
+
+      - name: "Run test:templates (same stack and grant as core)"
+        if: matrix.suite == 'core'
+        run: yarn test:templates
 
       - name: Dump stack logs on failure
         if: failure()

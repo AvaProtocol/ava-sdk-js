@@ -7,10 +7,11 @@
  * runner with the same allowlist.
  */
 
-import { Wallet as EthersWallet } from "ethers";
+import { FunctionFragment, Wallet as EthersWallet } from "ethers";
 
 import {
   Chains,
+  Protocols,
   SessionPolicyActions,
   Tokens,
   actionsCover,
@@ -30,14 +31,47 @@ export const SELECTOR_NATIVE_VALUE = "0x00000000";
 export const SESSION_POLICY_NATIVE_NOT_ALLOWED =
   "SESSION_POLICY_NATIVE_NOT_ALLOWED";
 
+/**
+ * Gateway problem+json `code` when `session_policy_deploy_check` is on and
+ * POST /workflows names a fund-moving step the runner's usable grant does
+ * not cover. `problem.required` describes the grant that would.
+ */
+export const SESSION_POLICY_NOT_COVERING = "SESSION_POLICY_NOT_COVERING";
+
 /** Stable label so later runs reuse this grant instead of replacing it. */
 export const E2E_SESSION_AGENT_LABEL = "e2e-funded-wallet";
 
 /** One year — the fixture is meant to be funded once and left alone. */
 export const E2E_GRANT_TTL_SECONDS = 365 * 24 * 60 * 60;
 
-/** 1000 USDC (6 decimals). Approve(0) is free; withdraw spends 0.01. */
-export const E2E_USDC_SPEND_CAP = "1000000000";
+/**
+ * Per-token caps. These are ceilings the owner signs, not balances: the
+ * fixture holds a few USDC and no LINK, and the AllowlistModule still
+ * refuses anything above what the runner has.
+ *
+ * They are sized for the deploy check, which derives a cap need per token
+ * from a workflow's fixed per-run amount multiplied by the runs its schedule
+ * allows inside the grant window, and refuses the create when the grant's
+ * cap is lower. The templates this suite deploys came out at 51,840 runs:
+ * the USDC read+write+customCode template transfers 0.1 USDC per run
+ * (need 5,184 USDC) and the AAVE health-factor alert approves and supplies
+ * 0.1 LINK per run (need 5,184 LINK). The Uniswap V3 stop-loss swaps
+ * 0.001 WETH per run; the router call carries no derived token spend today,
+ * so WETH only needs an allowlist row, but the cap is sized the same way in
+ * case it does tomorrow. Withdraw spends 0.01 USDC; approve(0) is free.
+ */
+export const E2E_USDC_SPEND_CAP = "10000000000"; // 10,000 USDC (6 decimals)
+export const E2E_LINK_SPEND_CAP = "10000000000000000000000"; // 10,000 LINK (18 decimals)
+export const E2E_WETH_SPEND_CAP = "100000000000000000000"; // 100 WETH (18 decimals)
+
+/**
+ * `supply(address,uint256,address,uint16)` on the AAVE V3 Pool. Stated as
+ * the signature it hashes from, like the selectors in the SDK's
+ * sessionPolicy builders, so a wrong value cannot hide behind a hex literal.
+ */
+const SELECTOR_AAVE_V3_SUPPLY = FunctionFragment.from(
+  "function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode)",
+).selector;
 
 /**
  * Same key `withdraw.test.ts` uses for the alternate-recipient case.
@@ -72,8 +106,19 @@ export function signTypedDataWithEthers(privateKey: string) {
   };
 }
 
+/**
+ * Everything a fund-moving test may plan on the funded runner: the withdraw
+ * and gas-tracking UserOps (USDC approve/transfer, native value to the owner
+ * and the alternate recipient) plus the calls the deployed templates make
+ * (AAVE approve LINK + Pool.supply, Uniswap V3 exactInputSingle with a WETH
+ * approve). One grant covers all of them, so the fixture is installed once
+ * per gateway database rather than once per template.
+ */
 export function e2eSessionActions(owner: string): v4.AllowedAction[] {
   const usdc = Tokens.USDC[Chains.Sepolia]!.address;
+  const link = Protocols.aaveV3.tokens.LINK[Chains.Sepolia]!;
+  const aavePool = Protocols.aaveV3.pool[Chains.Sepolia]!;
+  const weth = Protocols.uniswapV3.tokens.WETH[Chains.Sepolia]!;
   return SessionPolicyActions.merge([
     SessionPolicyActions.erc20Approve(usdc),
     SessionPolicyActions.erc20Transfer(usdc),
@@ -81,21 +126,42 @@ export function e2eSessionActions(owner: string): v4.AllowedAction[] {
     SessionPolicyActions.custom(e2eWithdrawAlternateRecipient(), [
       SELECTOR_NATIVE_VALUE,
     ]),
+    SessionPolicyActions.erc20Approve(link),
+    SessionPolicyActions.custom(aavePool, [SELECTOR_AAVE_V3_SUPPLY]),
+    SessionPolicyActions.erc20Approve(weth),
+    SessionPolicyActions.uniswapV3Swap(Chains.Sepolia),
   ]);
+}
+
+type SpendCap = NonNullable<v4.PreparePolicyRequest["erc20SpendCaps"]>[number];
+
+export function e2eSpendCaps(): SpendCap[] {
+  return [
+    { token: Tokens.USDC[Chains.Sepolia]!.address, amount: E2E_USDC_SPEND_CAP },
+    { token: Protocols.aaveV3.tokens.LINK[Chains.Sepolia]!, amount: E2E_LINK_SPEND_CAP },
+    { token: Protocols.uniswapV3.tokens.WETH[Chains.Sepolia]!, amount: E2E_WETH_SPEND_CAP },
+  ];
+}
+
+/** Every required per-token cap is present on the grant at least as high. */
+function capsCover(required: readonly SpendCap[], have: readonly SpendCap[]): boolean {
+  return required.every((need) => {
+    const got = have.find((c) => c.token.toLowerCase() === need.token.toLowerCase());
+    return got !== undefined && BigInt(got.amount) >= BigInt(need.amount);
+  });
 }
 
 function e2eGrantRequest(
   owner: string,
   chainId: number,
 ): v4.PreparePolicyRequest {
-  const usdc = Tokens.USDC[Chains.Sepolia]!.address;
   return {
     chainId,
     agentLabel: E2E_SESSION_AGENT_LABEL,
     justification:
-      "ava-sdk-js e2e UserOp fixture — USDC approve/transfer and native ETH",
+      "ava-sdk-js e2e fixture — USDC approve/transfer, native ETH, AAVE supply and Uniswap swap templates",
     allowedActions: e2eSessionActions(owner),
-    erc20SpendCap: { token: usdc, amount: E2E_USDC_SPEND_CAP },
+    erc20SpendCaps: e2eSpendCaps(),
     expiresInSeconds: E2E_GRANT_TTL_SECONDS,
   };
 }
@@ -110,8 +176,11 @@ function stillValid(policy: v4.SessionPolicy): boolean {
 const inflight = new Map<string, Promise<v4.SessionPolicy>>();
 
 /**
- * Reuse a covering pending/active grant on this runner, or submit one.
- * Does not revoke — the fixture grant is meant to outlive a single test.
+ * Reuse a pending/active grant on this runner that covers the required
+ * actions AND caps, or submit one. A grant whose actions match but whose
+ * caps are lower is not reused: the deploy check refuses on caps too, and
+ * reusing it would pin the old caps on every later run. Does not revoke —
+ * the fixture grant is meant to outlive a single test.
  */
 export async function ensureE2eSessionGrant(
   client: Client,
@@ -126,25 +195,19 @@ export async function ensureE2eSessionGrant(
 
   const run = async (): Promise<v4.SessionPolicy> => {
     const required = e2eSessionActions(ownerAddress);
+    const requiredCaps = e2eSpendCaps();
+    const covers = (p: v4.SessionPolicy): boolean =>
+      actionsCover(required, p.allowedActions ?? []) &&
+      capsCover(requiredCaps, p.erc20SpendCaps ?? []);
     const listed = await client.policies.list(walletAddress, { chainId });
     const usable = listed.items.filter(stillValid);
 
     const labeled = usable.find(
       (p) => p.agentLabel === E2E_SESSION_AGENT_LABEL,
     );
-    if (labeled) {
-      if (
-        !labeled.allowedActions ||
-        labeled.allowedActions.length === 0 ||
-        actionsCover(required, labeled.allowedActions)
-      ) {
-        return labeled;
-      }
-    }
+    if (labeled && covers(labeled)) return labeled;
 
-    const covering = usable.find((p) =>
-      actionsCover(required, p.allowedActions ?? []),
-    );
+    const covering = usable.find(covers);
     if (covering) return covering;
 
     try {
