@@ -217,10 +217,13 @@ export async function ensureE2eSessionGrant(
         signTypedDataWithEthers(ownerPrivateKey),
       );
     } catch (err) {
+      // Another process granted first. Reuse what it installed only if it
+      // covers; a surviving low-cap grant must surface as the conflict, not
+      // as a fixture that later fails every fund-moving deploy.
       const e = err as { status?: number };
       if (e.status === 409) {
         const retry = await client.policies.list(walletAddress, { chainId });
-        const won = retry.items.find(stillValid);
+        const won = retry.items.filter(stillValid).find(covers);
         if (won) return won;
       }
       throw err;

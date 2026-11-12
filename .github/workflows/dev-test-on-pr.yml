@@ -310,10 +310,14 @@ jobs:
           echo "API key generated (${#API_KEY} chars)"
 
       - name: "Run test:${{ matrix.suite }}"
+        id: suite
         run: yarn test:${{ matrix.suite }}
 
+      # Runs after core whether core passed or failed, so a core failure
+      # never hides the templates result; skipped when setup failed (core
+      # never ran) or the job was cancelled.
       - name: "Run test:templates (same stack and grant as core)"
-        if: matrix.suite == 'core'
+        if: ${{ !cancelled() && matrix.suite == 'core' && (steps.suite.outcome == 'success' || steps.suite.outcome == 'failure') }}
         run: yarn test:templates
 
       - name: Dump stack logs on failure
