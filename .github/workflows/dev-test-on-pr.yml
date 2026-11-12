@@ -311,14 +311,28 @@ jobs:
 
       - name: "Run test:${{ matrix.suite }}"
         id: suite
-        run: yarn test:${{ matrix.suite }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:${{ matrix.suite }} 2>&1 | tee "logs/${{ matrix.suite }}.log"
 
       # Runs after core whether core passed or failed, so a core failure
       # never hides the templates result; skipped when setup failed (core
       # never ran) or the job was cancelled.
       - name: "Run test:templates (same stack and grant as core)"
         if: ${{ !cancelled() && matrix.suite == 'core' && (steps.suite.outcome == 'success' || steps.suite.outcome == 'failure') }}
-        run: yarn test:templates
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:templates 2>&1 | tee logs/templates.log
+
+      - name: Upload suite logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-${{ matrix.suite }}-logs
+          path: logs/*.log
+          if-no-files-found: ignore
 
       - name: Dump stack logs on failure
         if: failure()
