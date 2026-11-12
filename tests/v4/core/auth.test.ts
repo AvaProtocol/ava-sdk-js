@@ -14,16 +14,17 @@
 import { APIError, Chains, Client } from "@avaprotocol/sdk-js";
 
 import {
-  TEST_AUTH_CHAIN_ID,
-  TEST_AUTH_URI,
   buildAuthPayload,
+  createSmartWallet,
   decodeJwtPayload,
   generateSignature,
   getClient,
   getEOAAddress,
+  getExchangeClient,
   getSuiteClient,
-  createSmartWallet,
   removeCreatedWorkflows,
+  TEST_AUTH_CHAIN_ID,
+  TEST_AUTH_URI,
   testPrivateKey,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -124,7 +125,8 @@ describe("Authentication Tests", () => {
     let client: Client;
 
     beforeAll(() => {
-      client = getClient();
+      // The exchange needs the partner assertion for this EOA (#900).
+      client = getExchangeClient(getEOAAddress());
     });
 
     test("returns a JWT with the expected claims (issuer + subject + exp)", async () => {
@@ -145,7 +147,7 @@ describe("Authentication Tests", () => {
     });
 
     test("exchangeWithKey is a one-shot helper around exchange()", async () => {
-      const c = getClient();
+      const c = getExchangeClient(getEOAAddress());
       const { version } = await c.health.check();
       const res = await c.auth.exchangeWithKey(testPrivateKey(), {
         uri: TEST_AUTH_URI,
@@ -185,7 +187,7 @@ describe("Authentication Tests", () => {
     test.each(EXPANSION_JWT_CHAINS)(
       "mints a JWT scoped to $name ($chainId) — worker reachable via gateway",
       async ({ chainId }) => {
-        const c = getClient();
+        const c = getExchangeClient(getEOAAddress());
         const { version } = await c.health.check();
         const res = await c.auth.exchangeWithKey(testPrivateKey(), {
           uri: TEST_AUTH_URI,

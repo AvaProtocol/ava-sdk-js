@@ -25,6 +25,12 @@ import {
 } from "@avaprotocol/sdk-js";
 
 import { TEST_REST_URL, requireEnv } from "./env";
+import { fetchWithRateLimitRetry } from "./fetchWithRetry";
+import {
+  PARTNER_ASSERTION_HEADER,
+  hasPartnerAssertionKey,
+  mintTestPartnerAssertion,
+} from "./partner";
 import { ensureE2eSessionGrant } from "./sessionGrant";
 
 /** Returns the configured test EOA private key. */
@@ -114,15 +120,25 @@ export async function getFundedClient(
   return { client, owner: getEOAAddress(privateKey), privateKey };
 }
 
+// Options each test client was built with, so the auth exchange can reuse
+// the caller's transport settings (fetch, timeout, baseUrl) without the SDK
+// having to expose them.
+const clientOptions = new WeakMap<Client, Partial<ClientOptions>>();
+
 /** Returns a fresh, unauthenticated v4 Client pointed at the test stack. */
 export function getClient(overrides?: Partial<ClientOptions>): Client {
-  return new Client({
+  const client = new Client({
     baseUrl: TEST_REST_URL(),
     // 240s: real-bundler UserOp round-trips (Sepolia mempool + receipt polling)
     // can hit 120-200s on CI cold-start — must exceed the largest jest.setTimeout().
     defaultTimeoutMs: 240_000,
+    // Retry the gateway's 429 RATE_LIMITED after Retry-After; production
+    // keeps the default limiter and the live suites can exceed it.
+    fetchImpl: fetchWithRateLimitRetry(),
     ...overrides,
   });
+  clientOptions.set(client, overrides ?? {});
+  return client;
 }
 
 // TEST_AUTH_CHAIN_ID is the chain id tests sign their auth message
@@ -174,12 +190,58 @@ export async function authenticateClient(
 ): Promise<string> {
   const pk = privateKey ?? testPrivateKey();
   const version = await fetchGatewayVersion(client);
-  const resp = await client.auth.exchangeWithKey(pk, {
+  // Exchange on a throwaway client that carries the partner assertion,
+  // then move the JWT onto the caller's client. The caller's client must
+  // not keep the header: partner-refusing endpoints (policies, budgets,
+  // 7702) reject any request that carries one.
+  // Reuse the caller's transport settings (fetch, timeout, baseUrl), but
+  // never its headers or token.
+  const transportOpts = { ...(clientOptions.get(client) ?? {}) };
+  delete transportOpts.headers;
+  delete transportOpts.token;
+  const resp = await getExchangeClient(
+    getEOAAddress(pk),
+    transportOpts,
+  ).auth.exchangeWithKey(pk, {
     uri: TEST_AUTH_URI,
     chainId: TEST_AUTH_CHAIN_ID,
     version,
   });
+  client.setToken(resp.token);
   return resp.token;
+}
+
+const PARTNER_SCOPE_AUTH_EXCHANGE = "auth:exchange";
+
+/**
+ * Headers for `POST /auth:exchange` on a gateway that gates JWT issuance
+ * behind a partner (EigenLayer-AVS #900, production since v6.2.5): a
+ * partner assertion with scope `auth:exchange` whose `sub` is the EOA
+ * being authenticated. Empty when no partner key is configured, so the
+ * same flow still works against an ungated gateway.
+ */
+export function exchangeHeaders(ownerAddress: string): Record<string, string> {
+  if (!hasPartnerAssertionKey()) {
+    return {};
+  }
+  return {
+    [PARTNER_ASSERTION_HEADER]: mintTestPartnerAssertion({
+      scope: PARTNER_SCOPE_AUTH_EXCHANGE,
+      subject: ownerAddress,
+    }),
+  };
+}
+
+/**
+ * A client whose default headers carry the exchange assertion for
+ * `ownerAddress`. Use it for the exchange only; see {@link authenticateClient}
+ * for why the long-lived client must not keep the header.
+ */
+export function getExchangeClient(
+  ownerAddress: string,
+  overrides?: Partial<ClientOptions>,
+): Client {
+  return getClient({ headers: exchangeHeaders(ownerAddress), ...overrides });
 }
 
 /**
