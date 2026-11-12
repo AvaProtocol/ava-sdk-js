@@ -25,11 +25,13 @@
 import { Chains, Client, Nodes, Protocols, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  TEST_AUTH_URI,
   createSmartWallet,
   decodeJwtPayload,
+  getEOAAddress,
+  getExchangeClient,
   getIsolatedClient,
   settingsForChain,
+  TEST_AUTH_URI,
 } from "../../utils/client";
 
 jest.setTimeout(120_000);
@@ -137,11 +139,14 @@ describeExpansion("Expansion chains E2E (auth + WETH read + simulate)", () => {
       // Re-mint on the shared client as the isolated owner so
       // nodes.run / simulate run under a JWT whose aud is this chain.
       const { version } = await client.health.check();
-      await client.auth.exchangeWithKey(isolatedKey, {
+      const minted = await getExchangeClient(
+        getEOAAddress(isolatedKey),
+      ).auth.exchangeWithKey(isolatedKey, {
         uri: TEST_AUTH_URI,
         chainId,
         version,
       });
+      client.setToken(minted.token);
     });
 
     test("mints a JWT scoped to the chain", async () => {

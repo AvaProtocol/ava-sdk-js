@@ -26,6 +26,11 @@ import {
 
 import { TEST_REST_URL, requireEnv } from "./env";
 import { fetchWithRateLimitRetry } from "./fetchWithRetry";
+import {
+  PARTNER_ASSERTION_HEADER,
+  hasPartnerAssertionKey,
+  mintTestPartnerAssertion,
+} from "./partner";
 import { ensureE2eSessionGrant } from "./sessionGrant";
 
 /** Returns the configured test EOA private key. */
@@ -39,7 +44,9 @@ export function testPrivateKey(): string {
  * is why `nextTestSalt()` was a fine default there and a 429 here.
  */
 export function tightWalletCap(): boolean {
-  return process.env.TIGHT_WALLET_CAP === "1" || process.env.TEST_ENV === "railway";
+  return (
+    process.env.TIGHT_WALLET_CAP === "1" || process.env.TEST_ENV === "railway"
+  );
 }
 
 /**
@@ -72,7 +79,7 @@ export function decodeJwtPayload(token: string): Record<string, unknown> {
  * must use {@link getFundedFixture}.
  */
 export async function getIsolatedClient(
-  overrides?: Partial<ClientOptions>,
+  overrides?: Partial<ClientOptions>
 ): Promise<{ client: Client; owner: string; privateKey: string }> {
   const wallet = Wallet.createRandom();
   const client = getClient(overrides);
@@ -89,7 +96,7 @@ export async function getIsolatedClient(
  * `TEST_PRIVATE_KEY` and is the wrong subject for an isolated client.
  */
 export async function getSuiteClient(
-  overrides?: Partial<ClientOptions>,
+  overrides?: Partial<ClientOptions>
 ): Promise<{ client: Client; owner: string; privateKey: string }> {
   if (tightWalletCap()) {
     return getIsolatedClient(overrides);
@@ -107,7 +114,7 @@ export async function getSuiteClient(
  * ensures the session grant the gateway requires to sign.
  */
 export async function getFundedClient(
-  overrides?: Partial<ClientOptions>,
+  overrides?: Partial<ClientOptions>
 ): Promise<{ client: Client; owner: string; privateKey: string }> {
   const client = getClient(overrides);
   const privateKey = testPrivateKey();
@@ -166,7 +173,7 @@ async function fetchGatewayVersion(client: Client): Promise<string> {
   // inside buildAuthMessage.
   if (!version) {
     throw new Error(
-      "Gateway /health did not return a version field — the gateway is older than the Position D rollout (AVS PR #554). Upgrade the gateway or test against a newer one.",
+      "Gateway /health did not return a version field — the gateway is older than the Position D rollout (AVS PR #554). Upgrade the gateway or test against a newer one."
     );
   }
   return version;
@@ -174,16 +181,53 @@ async function fetchGatewayVersion(client: Client): Promise<string> {
 
 export async function authenticateClient(
   client: Client,
-  privateKey?: string,
+  privateKey?: string
 ): Promise<string> {
   const pk = privateKey ?? testPrivateKey();
   const version = await fetchGatewayVersion(client);
-  const resp = await client.auth.exchangeWithKey(pk, {
-    uri: TEST_AUTH_URI,
-    chainId: TEST_AUTH_CHAIN_ID,
-    version,
-  });
+  // Exchange on a throwaway client that carries the partner assertion,
+  // then move the JWT onto the caller's client. The caller's client must
+  // not keep the header: partner-refusing endpoints (policies, budgets,
+  // 7702) reject any request that carries one.
+  const resp = await getExchangeClient(getEOAAddress(pk)).auth.exchangeWithKey(
+    pk,
+    { uri: TEST_AUTH_URI, chainId: TEST_AUTH_CHAIN_ID, version }
+  );
+  client.setToken(resp.token);
   return resp.token;
+}
+
+const PARTNER_SCOPE_AUTH_EXCHANGE = "auth:exchange";
+
+/**
+ * Headers for `POST /auth:exchange` on a gateway that gates JWT issuance
+ * behind a partner (EigenLayer-AVS #900, production since v6.2.5): a
+ * partner assertion with scope `auth:exchange` whose `sub` is the EOA
+ * being authenticated. Empty when no partner key is configured, so the
+ * same flow still works against an ungated gateway.
+ */
+export function exchangeHeaders(ownerAddress: string): Record<string, string> {
+  if (!hasPartnerAssertionKey()) {
+    return {};
+  }
+  return {
+    [PARTNER_ASSERTION_HEADER]: mintTestPartnerAssertion({
+      scope: PARTNER_SCOPE_AUTH_EXCHANGE,
+      subject: ownerAddress,
+    }),
+  };
+}
+
+/**
+ * A client whose default headers carry the exchange assertion for
+ * `ownerAddress`. Use it for the exchange only; see {@link authenticateClient}
+ * for why the long-lived client must not keep the header.
+ */
+export function getExchangeClient(
+  ownerAddress: string,
+  overrides?: Partial<ClientOptions>
+): Client {
+  return getClient({ headers: exchangeHeaders(ownerAddress), ...overrides });
 }
 
 /**
@@ -200,7 +244,7 @@ export function getEOAAddress(privateKey?: string): string {
  */
 export async function generateSignature(
   message: string,
-  privateKey?: string,
+  privateKey?: string
 ): Promise<string> {
   const signer = new Wallet(privateKey ?? testPrivateKey());
   return signer.signMessage(message);
@@ -219,7 +263,7 @@ export async function generateSignature(
  */
 export async function buildAuthPayload(
   client: Client,
-  privateKey?: string,
+  privateKey?: string
 ): Promise<{
   ownerAddress: string;
   message: string;
@@ -418,7 +462,7 @@ export function fundedWalletSalt(): string {
     throw new Error(
       "fundedWalletSalt: Jest has no tests/v4/<suite>/ testPath and " +
         "FUNDED_WALLET_SALT is unset. Refusing to default to salt 0 " +
-        "(that is the #263 nonce race).",
+        "(that is the #263 nonce race)."
     );
   }
   return FUNDED_WALLET_SALT;
@@ -434,14 +478,13 @@ export function fundedWalletSalt(): string {
  */
 export async function getFundedWallet(
   client: Client,
-  salt: string = fundedWalletSalt(),
+  salt: string = fundedWalletSalt()
 ): Promise<v4.Wallet | undefined> {
   const listed = await client.wallets.list();
   const existing = listed.data.find(
     (w) =>
       w.salt === salt &&
-      w.factoryAddress?.toLowerCase() ===
-        FUNDED_FACTORY_ADDRESS.toLowerCase(),
+      w.factoryAddress?.toLowerCase() === FUNDED_FACTORY_ADDRESS.toLowerCase()
   );
   if (existing) return existing;
 
@@ -481,7 +524,7 @@ const USEROP_RETRY_PAUSE_MS = 8_000;
  */
 export async function retryOnUserOpContention<T>(
   send: () => Promise<T>,
-  extractError?: (value: T) => string | undefined,
+  extractError?: (value: T) => string | undefined
 ): Promise<T> {
   const deadline = Date.now() + USEROP_RETRY_DEADLINE_MS;
   let last = "";
@@ -508,7 +551,7 @@ export async function retryOnUserOpContention<T>(
  * different salt so they do not share an EntryPoint nonce.
  */
 export async function getFundedFixture(
-  overrides?: Partial<ClientOptions>,
+  overrides?: Partial<ClientOptions>
 ): Promise<{
   client: Client;
   owner: string;
@@ -521,7 +564,7 @@ export async function getFundedFixture(
   if (!wallet) {
     throw new Error(
       `MA v2 funded wallet is not registered (salt ${salt}, factory ${FUNDED_FACTORY_ADDRESS}). ` +
-        `Create it once for this owner, fund it on Sepolia with ETH and USDC, then re-run.`,
+        `Create it once for this owner, fund it on Sepolia with ETH and USDC, then re-run.`
     );
   }
   await ensureE2eSessionGrant(
@@ -529,7 +572,7 @@ export async function getFundedFixture(
     wallet.address,
     privateKey,
     owner,
-    TEST_AUTH_CHAIN_ID,
+    TEST_AUTH_CHAIN_ID
   );
   return { client, owner, privateKey, wallet };
 }
@@ -537,19 +580,21 @@ export async function getFundedFixture(
 /** Fail a trigger that bounced instead of treating UserOp errors as skips. */
 export function assertUserOpTriggerOk(
   trig: Pick<v4.TriggerWorkflowResponse, "status" | "error">,
-  walletAddress: string,
+  walletAddress: string
 ): void {
   if (trig.status === "failed" || trig.status === "error" || trig.error) {
     throw new Error(
       `UserOp failed for MA v2 funded wallet ${walletAddress} ` +
         `(salt ${fundedWalletSalt()}, factory ${FUNDED_FACTORY_ADDRESS}): ` +
         `${trig.status ?? ""}${trig.error ? `: ${trig.error}` : ""}. ` +
-        `Fund this address on Sepolia with ETH (and USDC for ERC-20 tests).`,
+        `Fund this address on Sepolia with ETH (and USDC for ERC-20 tests).`
     );
   }
 }
 
-function triggerError(trig: Pick<v4.TriggerWorkflowResponse, "status" | "error">): string | undefined {
+function triggerError(
+  trig: Pick<v4.TriggerWorkflowResponse, "status" | "error">
+): string | undefined {
   if (trig.status === "failed" || trig.status === "error" || trig.error) {
     return `${trig.status ?? ""}${trig.error ? `: ${trig.error}` : ""}`;
   }
@@ -566,11 +611,11 @@ export async function triggerUserOpAndAssert(
   client: Client,
   workflowId: string,
   req: v4.TriggerWorkflowRequest,
-  walletAddress: string,
+  walletAddress: string
 ): Promise<v4.TriggerWorkflowResponse> {
   const trig = await retryOnUserOpContention(
     () => client.workflows.trigger(workflowId, req),
-    triggerError,
+    triggerError
   );
   assertUserOpTriggerOk(trig, walletAddress);
   return trig;
@@ -595,12 +640,14 @@ export async function triggerUserOpAndAssert(
  */
 export async function createSmartWallet(
   client: Client,
-  options: CreateSmartWalletOptions = {},
+  options: CreateSmartWalletOptions = {}
 ): Promise<v4.Wallet> {
   const salt = options.saltValue ?? (tightWalletCap() ? "0" : nextTestSalt());
   return client.wallets.create({
     salt,
-    ...(options.factoryAddress ? { factoryAddress: options.factoryAddress } : {}),
+    ...(options.factoryAddress
+      ? { factoryAddress: options.factoryAddress }
+      : {}),
   });
 }
 
@@ -628,7 +675,7 @@ const leakedWorkflows = new Map<string, string>();
  */
 export async function removeCreatedWorkflows(
   client: Client,
-  workflowIds: ReadonlyArray<string | undefined>,
+  workflowIds: ReadonlyArray<string | undefined>
 ): Promise<void> {
   for (const id of workflowIds) {
     if (!id) continue;
@@ -644,7 +691,7 @@ export async function removeCreatedWorkflows(
       leakedWorkflows.set(id, reason);
       console.error(
         `[cleanup] LEAKED WORKFLOW ${id} — cancel failed: ${reason}. ` +
-          `It keeps executing on its schedule (and spending) until cancelled by hand.`,
+          `It keeps executing on its schedule (and spending) until cancelled by hand.`
       );
     }
   }
@@ -660,7 +707,7 @@ export function assertNoLeakedWorkflows(): void {
   leakedWorkflows.clear();
   throw new Error(
     `${leaked.length} workflow(s) survived cleanup and are still running — cancel them by hand:\n` +
-      leaked.map(([id, reason]) => `  - ${id}: ${reason}`).join("\n"),
+      leaked.map(([id, reason]) => `  - ${id}: ${reason}`).join("\n")
   );
 }
 
@@ -681,7 +728,11 @@ export function settingsFor(runner: string, name = "Test Simulation") {
 // Retained for back-compat with callers that pass an explicit chain. Like
 // `settingsFor`, the `chain_id` it emits is vestigial — the per-part `chainId`
 // on each node/trigger is authoritative.
-export function settingsForChain(runner: string, chainId: number, name = "Test Simulation") {
+export function settingsForChain(
+  runner: string,
+  chainId: number,
+  name = "Test Simulation"
+) {
   return { name, runner, chain_id: chainId };
 }
 
@@ -692,7 +743,8 @@ export function settingsForChain(runner: string, chainId: number, name = "Test S
  */
 export async function getCurrentBlockNumber(): Promise<number> {
   const ep = process.env.CHAIN_ENDPOINT ?? "";
-  if (!ep) throw new Error("CHAIN_ENDPOINT not set — block-trigger tests need it");
+  if (!ep)
+    throw new Error("CHAIN_ENDPOINT not set — block-trigger tests need it");
   const url = ep.startsWith("http") ? ep : `https://${ep}`;
   // Defer the ethers import so non-chain tests don't pay the cost.
   const { JsonRpcProvider } = await import("ethers");
