@@ -126,11 +126,13 @@ describe("ETHTransfer Node Tests", () => {
         // a compile error from the engine.
         edges: [{ id: "e1", source: "trigger", target: "transfer" }],
       };
-      // Option C of EigenLayer-AVS #761: REST session grants cannot
-      // cover execute(to, value, 0x), so no grant makes this workflow
-      // runnable. With session_policy_deploy_check on (production, and
-      // the CI stack) the gateway refuses at create, before anything
-      // reaches the bundler, and names the recipient a grant would need.
+      // The fixture grant carries no nativeRecipients on purpose: the
+      // withdraw suite asserts that native sends are refused under it.
+      // A native send is grantable (a grant with nativeRecipients names
+      // the addresses the runner may pay), so with
+      // session_policy_deploy_check on (production, and the CI stack) the
+      // gateway refuses this create before anything reaches the bundler
+      // and names, in problem.required, the recipient a grant would need.
       let refusal: unknown;
       try {
         const created = await funded.workflows.create(workflowReq);

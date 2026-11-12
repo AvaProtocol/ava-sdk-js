@@ -23,10 +23,10 @@ import type { v4 } from "@avaprotocol/types";
 export const SELECTOR_NATIVE_VALUE = "0x00000000";
 
 /**
- * Gateway problem+json `code` for a native ETH send under a REST
- * session grant (EigenLayer-AVS #761). Every REST grant is
- * selector-scoped, so `execute(to, value, 0x)` cannot validate.
- * Re-granting does not fix it.
+ * Gateway problem+json `code` for a native ETH send under a grant whose
+ * `nativeRecipients` does not name the destination. The fixture grant
+ * lists none, so every native send under it is refused this way; the
+ * owner can allow one by granting again with `nativeRecipients`.
  */
 export const SESSION_POLICY_NATIVE_NOT_ALLOWED =
   "SESSION_POLICY_NATIVE_NOT_ALLOWED";
