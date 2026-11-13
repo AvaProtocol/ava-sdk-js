@@ -19,6 +19,7 @@ import {
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
+  getCurrentBlockNumber,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
 
@@ -50,11 +51,7 @@ describe("Gas tracking", () => {
     const { client: funded, owner: fundedOwner, wallet } = await getFundedFixture();
     const usdc = Tokens.USDC[Chains.Sepolia]!.address;
     const erc20Abi = [...Protocols.erc20.transferAbi, ...Protocols.erc20.approveAbi];
-    const blockNumber = await (async () => {
-      const { JsonRpcProvider } = await import("ethers");
-      const ep = process.env.CHAIN_ENDPOINT ?? "";
-      return new JsonRpcProvider(ep.startsWith("http") ? ep : `https://${ep}`).getBlockNumber();
-    })();
+    const blockNumber = await getCurrentBlockNumber();
 
     const created = await funded.workflows.create({
       ...createFromTemplate(wallet.address),

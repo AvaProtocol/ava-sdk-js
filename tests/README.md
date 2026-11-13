@@ -31,6 +31,30 @@ Suites map to `yarn test:<name>` and to CI matrix jobs:
 | `yarn test:nodes` | `tests/v4/nodes` |
 | `yarn test:templates` | `tests/v4/templates` |
 
+The production workflow (`.github/workflows/prod-test-on-pr.yml`, manual
+dispatch only) runs the same suites against `https://api.avaprotocol.org`
+with `TEST_ENV=railway` and a Sepolia `CHAIN_ENDPOINT`. Suites that never
+touch the funded runner (workflows, triggers) run in parallel; core,
+executions, nodes and templates run one at a time on salt `0`, because the
+production owner's three-wallet cap is already met (salt `0` plus two stray
+unique-salt wallets from a 2026-11-12 run that predates the tight-cap
+wiring), so salts `1` and `2` cannot be registered there.
+`chainRpcProvider()` in `tests/utils/client.ts` verifies the endpoint's
+chain id once per process, so an RPC for any other chain fails every
+on-chain test with a clear message instead of seeding block triggers from
+the wrong chain.
+
+Both gateways run with `session_policy_deploy_check: true` (production since
+2026-10-06, the CI stack via `config/gateway.yaml`): `POST /workflows` refuses
+a fund-moving workflow whose runner has no covering grant with
+`409 SESSION_POLICY_NOT_COVERING`. The fund-moving template deploy tests
+therefore run on the funded fixture, and the fixture grant in
+`tests/utils/sessionGrant.ts` lists every call those templates make (AAVE
+approve + supply, Uniswap V3 swap + WETH approve) with a per-token cap above
+each template's amount. In CI the templates suite runs inside the core
+shard, on core's stack and grant, so two stacks never install the grant on
+the same on-chain wallet at once.
+
 ## External template integration
 
 These opt-in suites compile an externally maintained template from its current
@@ -120,7 +144,7 @@ CI suite** so parallel matrix jobs do not share an EntryPoint nonce
 | `yarn test:core` (withdraw) | `0` |
 | `yarn test:executions` (gasTracking) | `1` |
 | `yarn test:nodes` (contractWrite) | `2` |
-| templates / workflows / triggers | `0` |
+| templates (fund-moving deploys, in the core shard) / workflows / triggers | `0` |
 
 Those are the only three salts allowed under production's 3-wallet cap.
 CI sets `FUNDED_WALLET_SALT` per matrix job; local `yarn test:<suite>`

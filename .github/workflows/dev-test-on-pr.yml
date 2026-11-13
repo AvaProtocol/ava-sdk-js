@@ -82,8 +82,10 @@ jobs:
             funded_salt: "0"
           - suite: nodes
             funded_salt: "2"
-          - suite: templates
-            funded_salt: "0"
+          # templates runs inside the core shard (below): its fund-moving
+          # template deploys need the funded runner's session grant, and two
+          # stacks installing that grant on the same on-chain wallet at once
+          # would race on its nonce and replace each other's entity.
 
     env:
       # The gateway/worker run in containers, so a stub server bound on the
@@ -308,7 +310,29 @@ jobs:
           echo "API key generated (${#API_KEY} chars)"
 
       - name: "Run test:${{ matrix.suite }}"
-        run: yarn test:${{ matrix.suite }}
+        id: suite
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:${{ matrix.suite }} 2>&1 | tee "logs/${{ matrix.suite }}.log"
+
+      # Runs after core whether core passed or failed, so a core failure
+      # never hides the templates result; skipped when setup failed (core
+      # never ran) or the job was cancelled.
+      - name: "Run test:templates (same stack and grant as core)"
+        if: ${{ !cancelled() && matrix.suite == 'core' && (steps.suite.outcome == 'success' || steps.suite.outcome == 'failure') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:templates 2>&1 | tee logs/templates.log
+
+      - name: Upload suite logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-${{ matrix.suite }}-logs
+          path: logs/*.log
+          if-no-files-found: ignore
 
       - name: Dump stack logs on failure
         if: failure()

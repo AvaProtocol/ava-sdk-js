@@ -80,3 +80,20 @@ export function createManualFromTemplate(
     ...overrides,
   };
 }
+
+/**
+ * Schedule fields under which a deployed fund-moving workflow can never run.
+ *
+ * The template deploy tests create real automations on the funded runner,
+ * whose grant covers their writes, so a trigger firing between create and
+ * cleanup would move real funds, and a submitted UserOp cannot be unsent.
+ * The engine holds a task whose startAt is in the future (not_started) and
+ * retires one whose expiredAt has passed (expired). With both set to the
+ * same instant there is no moment at which the task is runnable, so even a
+ * failed cleanup leaves nothing that could fire. maxExecution 1 is belt and
+ * braces.
+ */
+export function heldSchedule(): { startAt: number; expiredAt: number; maxExecution: number } {
+  const startAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  return { startAt, expiredAt: startAt, maxExecution: 1 };
+}

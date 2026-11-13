@@ -126,3 +126,11 @@ notifications:
 # policy's webhook points at the production gateway, which would approve and
 # bill a CI run against production's wallet records and credit ledger.
 disable_gas_sponsorship: true
+
+# Production refuses POST /workflows and :resume when the runner's usable
+# session grant does not cover the workflow's fund-moving steps
+# (409 SESSION_POLICY_NOT_COVERING; on in avs-infra since 2026-10-06). The
+# flag defaults off, which let fund-moving template deploys pass here on
+# grant-less runners while production refused them. Keep it on so CI sees
+# what production does.
+session_policy_deploy_check: true

@@ -3,10 +3,9 @@
  * workflow simulation and deployment exercise the supported action paths.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { APIError, Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  getCurrentBlockNumber,
   getSuiteClient,
   getFundedFixture,
   createSmartWallet,
@@ -14,7 +13,7 @@ import {
   settingsFor,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
-import { SESSION_POLICY_NATIVE_NOT_ALLOWED } from "../../utils/sessionGrant";
+import { SESSION_POLICY_NOT_COVERING } from "../../utils/sessionGrant";
 
 // deploy+trigger block matches a future block (blockNumber+5) then waits for the
 // bundler/UserOp receipt — ~45s against a fresh gateway. The jest budget is set
@@ -102,12 +101,7 @@ describe("ETHTransfer Node Tests", () => {
       await removeCreatedWorkflows(funded, fundedWorkflowIds.splice(0));
     });
 
-    test("refuses a native ETH transfer with SESSION_POLICY_NATIVE_NOT_ALLOWED", async () => {
-      if (!process.env.CHAIN_ENDPOINT) {
-        console.log("Skipping — CHAIN_ENDPOINT not set");
-        return;
-      }
-      const blockNumber = await getCurrentBlockNumber();
+    test("refuses to deploy a native ETH transfer the grant cannot cover", async () => {
       const triggerInterval = 5;
 
       const workflowReq = {
@@ -132,27 +126,33 @@ describe("ETHTransfer Node Tests", () => {
         // a compile error from the engine.
         edges: [{ id: "e1", source: "trigger", target: "transfer" }],
       };
-      const created = await funded.workflows.create(workflowReq);
-      const workflowId = created.id as string;
-      fundedWorkflowIds.push(workflowId);
-
-      const trig = await funded.workflows.trigger(workflowId, {
-        triggerType: "block",
-        triggerOutput: { blockNumber: blockNumber + triggerInterval },
-        isBlocking: true,
-      });
-      // Option C of EigenLayer-AVS #761: REST session grants cannot
-      // cover execute(to, value, 0x). The gateway refuses before the
-      // bundler instead of returning opaque AA23. The trigger envelope
-      // only says "1 of 2 steps failed: transfer"; the code is on the
-      // step.
-      expect(trig.status).toBe("failed");
-
-      const execution = await funded.executions.retrieve(trig.executionId, { workflowId });
-      const step = execution.steps?.find((s) => s.id === "transfer");
-      expect(step?.success).toBe(false);
-      const stepErr = `${step?.error ?? ""} ${step?.errorCode ?? ""}`;
-      expect(stepErr).toContain(SESSION_POLICY_NATIVE_NOT_ALLOWED);
+      // The fixture grant carries no nativeRecipients on purpose: the
+      // withdraw suite asserts that native sends are refused under it.
+      // A native send is grantable (a grant with nativeRecipients names
+      // the addresses the runner may pay), so with
+      // session_policy_deploy_check on (production, and the CI stack) the
+      // gateway refuses this create before anything reaches the bundler
+      // and names, in problem.required, the recipient a grant would need.
+      let refusal: unknown;
+      try {
+        const created = await funded.workflows.create(workflowReq);
+        fundedWorkflowIds.push(created.id as string);
+      } catch (err) {
+        refusal = err;
+      }
+      if (refusal === undefined) {
+        throw new Error(
+          "create succeeded: this gateway runs without session_policy_deploy_check",
+        );
+      }
+      expect(refusal).toBeInstanceOf(APIError);
+      const apiError = refusal as APIError;
+      expect(apiError.status).toBe(409);
+      expect(apiError.code).toBe(SESSION_POLICY_NOT_COVERING);
+      const recipients = (apiError.problem?.required?.nativeRecipients ?? []).map((a) =>
+        a.toLowerCase(),
+      );
+      expect(recipients).toContain(fundedOwner.toLowerCase());
     });
   });
 });

@@ -1,177 +1,242 @@
 name: Run Production Tests
 
-# Production tests run against live deployed endpoints. Do NOT enable auto-run on
-# pull_request — in-flight PR changes will break against the current production
-# deployment. Trigger this workflow manually after a release is deployed.
+# Runs the v4 suites against the live gateway (api.avaprotocol.org). Manual
+# dispatch only: in-flight PR changes break against the current production
+# deployment, so run it after a release is deployed, never on pull_request.
+#
+# One gateway serves every chain and routes each workflow part by its own
+# chainId, so there is nothing per-chain to parametrise here; the suites
+# hardcode Sepolia for block seeds, fixtures and receipts. Shards are suites,
+# like dev-test-on-pr.yml, so one failing suite never skips the others.
+#
+# Two jobs. The suites that never touch the funded runner (workflows,
+# triggers) run side by side. The four that do (core, executions, nodes, and
+# templates, whose fund-moving deploys need the runner's grant) run one after
+# another in a single job: production caps an owner at three Sepolia wallets,
+# and the test owner's cap is already met by the funded salt-0 runner plus
+# two stray unique-salt wallets, so there is exactly one funded sender and
+# parallel shards would race on its EntryPoint nonce (#263).
+#
+# GitHub Actions has no YAML anchors, so the two jobs repeat their env and
+# setup steps. Keep them identical.
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Environment to run tests against"
+      suite:
+        description: "Suite to run"
         required: true
-        default: "sepolia"
+        default: all
         type: choice
         options:
-          - sepolia
-          - ethereum
-          - base
-          - base-sepolia
-          # - soneium-minato  # Disabled - no longer running tests on this network
+          - all
+          - core
+          - workflows
+          - executions
+          - triggers
+          - nodes
+          - templates
 
 jobs:
-  production-test:
+  plan:
+    name: Plan shards
     runs-on: ubuntu-latest
+    outputs:
+      parallel: ${{ steps.plan.outputs.parallel }}
+    steps:
+      - name: Select parallel shards
+        id: plan
+        env:
+          SUITE: ${{ inputs.suite }}
+        run: |
+          all='["workflows","triggers"]'
+          selected=$(echo "$all" | jq -c --arg s "$SUITE" '[.[] | select($s == "all" or . == $s)]')
+          echo "parallel=$selected" >> "$GITHUB_OUTPUT"
+          echo "Parallel shards: $selected"
+
+  production-test:
+    name: "Production / ${{ matrix.suite }}"
+    needs: plan
+    if: needs.plan.outputs.parallel != '[]'
+    runs-on: ubuntu-latest
+    # One GitHub environment for the live gateway: AVS_API_KEY (Sepolia admin
+    # JWT), CHAIN_ENDPOINT (a Sepolia RPC) and PARTNER_ASSERTION_PRIVATE_KEY
+    # (the `sdk-ci` partner registered in avs-infra's gateway config).
+    environment: production
     strategy:
       fail-fast: false
       matrix:
-        env: [sepolia, ethereum, base, base-sepolia] # soneium-minato disabled
-    environment: ${{ matrix.env }}
+        suite: ${{ fromJSON(needs.plan.outputs.parallel) }}
     env:
-      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
-      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
-      TEST_ENV: ${{ matrix.env }}
-      AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
-      # tests/utils/env.ts defaults AVS_REST_URL to localhost:8080, so without
-      # this every gateway call fails with "fetch /health: fetch failed".
       AVS_REST_URL: https://api.avaprotocol.org/api/v1
+      # The test utilities key on TEST_ENV=railway for a production gateway:
+      # isolated owners and fixed fixture salts under the 3-wallet cap, and
+      # the gateway-routed multichain suites enabled.
+      TEST_ENV: railway
+      # The only funded runner registered for the production owner; see the
+      # header. Wins over Jest testPath inference in fundedWalletSalt().
+      FUNDED_WALLET_SALT: "0"
+      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       # Production enforces partner admission on auth:exchange (EigenLayer-AVS
-      # #900, shipped in v6.2.5). The runner signs assertions as the dedicated
-      # `sdk-ci` partner registered in avs-infra's gateway config.
+      # #900, shipped in v6.2.5).
       PARTNER_ASSERTION_PRIVATE_KEY: ${{ secrets.PARTNER_ASSERTION_PRIVATE_KEY }}
       PARTNER_ASSERTION_ISSUER: sdk-ci
       PARTNER_ASSERTION_AUDIENCE: avs-gateway-prod
-      # Production caps smart wallets at 3 per owner per chain. The test
-      # utilities only switch to isolated owners and fixed fixture salts when
-      # TEST_ENV=railway or this flag is set; TEST_ENV here is the chain name.
-      TIGHT_WALLET_CAP: "1"
-      # On production env, when test run it may not cleanup data properly for multiple reasons.
-      # In the next run, especially on pagination test, the assumption about data is wrong.
-      # For those kind of particular test, we want to ensure a 100% unique salt across run
-      # One way to do so, is get this run_id from github action and use it as salt
-      # On local dev, we just default to a hard code number in the test to isolate its. data
-      # on local test is continously wipe out on every run so it isn't a problem like production
-      # We may want to sweep and delete task data on those test account
-      RUN_ID: ${{ github.run_id }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          # workflow_dispatch only — check out the ref the run was triggered from.
-          fetch-depth: 0
 
-      - name: Debug environment variables
+      - name: Check required environment
         run: |
-          echo "TEST_ENV: $TEST_ENV"
-          echo "Using environment: ${{ matrix.env }}"
-          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
-
-      - name: Check Source or Test Code Changes
-        id: check_source_changes
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "=== Pull Request Information ==="
-          echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"
-          echo "PR Head SHA: ${{ github.event.pull_request.head.sha }}"
-          echo "PR Head Ref: ${{ github.event.pull_request.head.ref }}"
-          echo "GitHub Ref: ${{ github.ref }}"
-          echo "Base Branch: ${{ github.base_ref }}"
-
-          # Fetch both branches
-          git fetch origin ${{ github.base_ref }}
-          git fetch origin ${{ github.event.pull_request.head.ref }}
-
-          # Get all changed files (only names)
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
-
-          # Define the source code patterns we want to monitor
-          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests/)'
-
-          echo "=== Git Information ==="
-          echo "Current branch: $(git branch --show-current)"
-          echo "Git status:"
-          git status
-
-          echo "=== Changed Files ==="
-          echo "$CHANGED_FILES"
-
-          # Check if any files in our monitored directories have changed
-          MATCHING_FILES=$(echo "$CHANGED_FILES" | grep -E "$SOURCE_PATTERN" || echo "")
-
-          echo "=== Matching Files ==="
-          echo "$MATCHING_FILES"
-
-          if [ -z "$MATCHING_FILES" ]; then
-            echo "source_changed=false" >> $GITHUB_OUTPUT
-            echo "No changes detected in monitored directories, skipping tests"
-          else
-            echo "source_changed=true" >> $GITHUB_OUTPUT
-            echo "Changes detected in monitored directories:"
-            echo "$MATCHING_FILES"
-          fi
-        shell: bash
-
-      - name: Print Required Environment Variables
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: |
-          echo "=== Required Variables from envalid.ts ==="
-          echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
-          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
-          echo "TEST_PRIVATE_KEY: $([ -n "$TEST_PRIVATE_KEY" ] && echo set || echo missing)" # Never print any part of a private key
-          echo "TEST_ENV: $TEST_ENV"
-
-          if [ -z "$AVS_API_KEY" ] || [ -z "$CHAIN_ENDPOINT" ] || [ -z "$TEST_PRIVATE_KEY" ] || [ -z "$TEST_ENV" ]; then
-            echo "Error: One or more required environment variables are empty." >&2
+          missing=0
+          for name in AVS_API_KEY CHAIN_ENDPOINT PARTNER_ASSERTION_PRIVATE_KEY TEST_PRIVATE_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is empty"
+              missing=1
+            else
+              echo "$name: set"
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+          # Every suite seeds Sepolia. Refuse any other chain here, with a
+          # clear message, instead of as block triggers that never fire.
+          case "$CHAIN_ENDPOINT" in
+            http*) url="$CHAIN_ENDPOINT" ;;
+            *) url="https://$CHAIN_ENDPOINT" ;;
+          esac
+          chain_id=$(curl -sS --max-time 20 -X POST -H 'content-type: application/json' \
+            --data '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' "$url" | jq -r '.result')
+          echo "CHAIN_ENDPOINT chain id: $chain_id"
+          if [ "$chain_id" != "0xaa36a7" ]; then
+            echo "::error::CHAIN_ENDPOINT serves chain $chain_id; the suites need Sepolia (0xaa36a7)"
             exit 1
           fi
 
       - name: Use Node.js
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: "yarn"
 
       - name: Install dependencies
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Build the SDK
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
-      - name: Test Core Functionality
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: ${{ matrix.env }}
-        run: yarn test:core
+      - name: "Run test:${{ matrix.suite }}"
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:${{ matrix.suite }} 2>&1 | tee "logs/${{ matrix.suite }}.log"
 
-      - name: Test Workflows
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: ${{ matrix.env }}
-        run: yarn test:workflows
+      - name: Upload suite log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-${{ matrix.suite }}-log
+          path: logs/*.log
+          if-no-files-found: ignore
 
-      - name: Test Executions
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: ${{ matrix.env }}
-        run: yarn test:executions
+  production-userop:
+    name: "Production / core, executions, nodes, templates (one at a time)"
+    if: inputs.suite == 'all' || contains(fromJSON('["core","executions","nodes","templates"]'), inputs.suite)
+    runs-on: ubuntu-latest
+    environment: production
+    # Only one dispatch may drive the salt-0 sender at a time, whichever ref
+    # or suite selection it came from. A newer pending run replaces an older
+    # pending one; the running one is never cancelled.
+    concurrency:
+      group: production-userop-salt0
+      cancel-in-progress: false
+    env:
+      AVS_REST_URL: https://api.avaprotocol.org/api/v1
+      TEST_ENV: railway
+      FUNDED_WALLET_SALT: "0"
+      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
+      PARTNER_ASSERTION_PRIVATE_KEY: ${{ secrets.PARTNER_ASSERTION_PRIVATE_KEY }}
+      PARTNER_ASSERTION_ISSUER: sdk-ci
+      PARTNER_ASSERTION_AUDIENCE: avs-gateway-prod
 
-      - name: Test Triggers
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: ${{ matrix.env }}
-        run: yarn test:triggers
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Test Nodes
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: ${{ matrix.env }}
-        run: yarn test:nodes
+      - name: Check required environment
+        run: |
+          missing=0
+          for name in AVS_API_KEY CHAIN_ENDPOINT PARTNER_ASSERTION_PRIVATE_KEY TEST_PRIVATE_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is empty"
+              missing=1
+            else
+              echo "$name: set"
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+          case "$CHAIN_ENDPOINT" in
+            http*) url="$CHAIN_ENDPOINT" ;;
+            *) url="https://$CHAIN_ENDPOINT" ;;
+          esac
+          chain_id=$(curl -sS --max-time 20 -X POST -H 'content-type: application/json' \
+            --data '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' "$url" | jq -r '.result')
+          echo "CHAIN_ENDPOINT chain id: $chain_id"
+          if [ "$chain_id" != "0xaa36a7" ]; then
+            echo "::error::CHAIN_ENDPOINT serves chain $chain_id; the suites need Sepolia (0xaa36a7)"
+            exit 1
+          fi
 
-      - name: Test Templates
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: ${{ matrix.env }}
-        run: yarn test:templates
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build the SDK
+        id: build
+        run: yarn build
+
+      # Each suite runs even when an earlier one failed; the job still fails
+      # if any of them did.
+      - name: Run test:core
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && (inputs.suite == 'all' || inputs.suite == 'core') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:core 2>&1 | tee logs/core.log
+
+      - name: Run test:executions
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && (inputs.suite == 'all' || inputs.suite == 'executions') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:executions 2>&1 | tee logs/executions.log
+
+      - name: Run test:nodes
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && (inputs.suite == 'all' || inputs.suite == 'nodes') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:nodes 2>&1 | tee logs/nodes.log
+
+      - name: Run test:templates
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && (inputs.suite == 'all' || inputs.suite == 'templates') }}
+        run: |
+          set -o pipefail
+          mkdir -p logs
+          yarn test:templates 2>&1 | tee logs/templates.log
+
+      - name: Upload suite logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-userop-logs
+          path: logs/*.log
+          if-no-files-found: ignore

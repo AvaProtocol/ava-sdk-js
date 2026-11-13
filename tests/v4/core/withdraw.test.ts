@@ -36,6 +36,7 @@ import {
   fundedWalletSalt,
   retryOnUserOpContention,
   createSmartWallet,
+  chainRpcProvider,
 } from "../../utils/client";
 import {
   e2eWithdrawAlternateRecipient,
@@ -83,10 +84,10 @@ function fundedSkipMessage(address: string, detail: string): string {
   );
 }
 
-function chainProvider(): ethers.JsonRpcProvider | undefined {
-  const ep = optionalEnv("CHAIN_ENDPOINT", "") || optionalEnv("ETH_RPC_URL", "");
-  if (!ep) return undefined;
-  return new ethers.JsonRpcProvider(ep.startsWith("http") ? ep : `https://${ep}`);
+/** Verified Sepolia provider, or undefined when CHAIN_ENDPOINT is absent. */
+async function chainProvider(): Promise<ethers.JsonRpcProvider | undefined> {
+  if (!optionalEnv("CHAIN_ENDPOINT", "")) return undefined;
+  return chainRpcProvider();
 }
 
 function isInsufficient(status: number | undefined, code: string, message: string): boolean {
@@ -139,7 +140,7 @@ async function submitWithdrawOrSkip(
     );
   }
   const hash = response.transactionHash;
-  const provider = chainProvider();
+  const provider = await chainProvider();
   if (hash && provider) {
     await pollReceipt(hash, provider);
   }
@@ -376,9 +377,7 @@ describe("Withdraw Funds Tests", () => {
         return;
       }
 
-      const provider = new ethers.JsonRpcProvider(
-        chainEndpoint.startsWith("http") ? chainEndpoint : `https://${chainEndpoint}`,
-      );
+      const provider = await chainRpcProvider();
 
       const req: v4.WithdrawRequest = {
         recipientAddress: eoaAddress,

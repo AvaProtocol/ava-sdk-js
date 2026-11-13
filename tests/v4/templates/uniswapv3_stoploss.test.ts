@@ -13,9 +13,11 @@ import { Chains, Nodes, Protocols, Triggers, type Client } from "@avaprotocol/sd
 import {
   getSuiteClient,
   createSmartWallet,
+  getFundedFixture,
   removeCreatedWorkflows,
   settingsForChain,
 } from "../../utils/client";
+import { heldSchedule } from "../../utils/templates";
 
 jest.setTimeout(60_000);
 
@@ -32,6 +34,9 @@ const CHAINLINK_ETH_USD_SEPOLIA = Protocols.chainlink.ethUsdFeed[Chains.Sepolia]
 describe("Template: Uniswap V3 stop-loss", () => {
   let client: Client;
   const createdWorkflowIds: string[] = [];
+  // The deploy test's workflows belong to the funded owner, not the suite EOA.
+  let funded: Client | undefined;
+  const fundedWorkflowIds: string[] = [];
 
   beforeAll(async () => {
     ({ client } = await getSuiteClient());
@@ -39,6 +44,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
 
   afterEach(async () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
+    if (funded) await removeCreatedWorkflows(funded, fundedWorkflowIds.splice(0));
   });
 
   /** Canonical workflow shape — shared by simulate and deploy tests. */
@@ -126,11 +132,21 @@ describe("Template: Uniswap V3 stop-loss", () => {
   });
 
   test("deploys + retrieves the workflow with the cron trigger type", async () => {
-    const wallet = await createSmartWallet(client);
+    // Production, and the CI stack since session_policy_deploy_check went
+    // on, refuse a fund-moving create unless the runner's grant covers
+    // every write. This deploys on the funded fixture, whose grant
+    // (tests/utils/sessionGrant.ts) covers this template; simulate keeps
+    // the suite client.
+    const fixture = await getFundedFixture();
+    const fundedClient = fixture.client;
+    funded = fundedClient;
+    const wallet = fixture.wallet;
     const wf = buildWorkflow(wallet.address);
 
-    const created = await client.workflows.create({
+    const created = await fundedClient.workflows.create({
       ...wf,
+      // Held: a trigger firing before cleanup would move real funds.
+      ...heldSchedule(),
       // The top-level wf.name is the canonical workflow name; the
       // REST mapper auto-mirrors it into settings.name server-side.
       inputVariables: {
@@ -138,9 +154,9 @@ describe("Template: Uniswap V3 stop-loss", () => {
       },
     });
     expect(typeof created.id).toBe("string");
-    createdWorkflowIds.push(created.id);
+    fundedWorkflowIds.push(created.id);
 
-    const retrieved = await client.workflows.retrieve(created.id);
+    const retrieved = await fundedClient.workflows.retrieve(created.id);
     expect(retrieved.id).toBe(created.id);
     expect(retrieved.name).toBe(wf.name);
     expect(retrieved.trigger?.type).toBe("cron");
