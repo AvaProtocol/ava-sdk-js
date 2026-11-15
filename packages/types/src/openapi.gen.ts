@@ -552,6 +552,29 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/wallets:allocate": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Allocate the next global smart wallet identity
+         * @description Owner JWT required. Allocates the next unused salt under the owner-wide
+         *     active quota across all supported networks. Hidden wallets release a slot.
+         *     Idempotency keys are durable and owner-scoped; replay never creates another
+         *     identity or restores an archived one. No account is deployed by this call.
+         */
+        readonly post: operations["allocateWallet"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/wallets": {
         readonly parameters: {
             readonly query?: never;
@@ -2434,6 +2457,10 @@ export interface components {
             readonly kind?: "eoa_7702";
             /** @description SMA-7702 implementation the EOA designates. Set when kind is eoa_7702. */
             readonly delegate?: components["schemas"]["EthereumAddress"];
+            /** @description Stable global derived-wallet identity, shared across supported networks. */
+            readonly walletId?: string;
+            /** @description Pinned MA v2 derivation profile, independent of network runtime state. */
+            readonly deploymentProfile?: string;
             readonly isHidden?: boolean;
             /** Format: int64 */
             readonly totalWorkflowCount?: number;
@@ -2448,6 +2475,21 @@ export interface components {
         };
         readonly WalletList: {
             readonly data: readonly components["schemas"]["Wallet"][];
+            readonly usage?: components["schemas"]["WalletUsage"];
+        };
+        readonly WalletUsage: {
+            /** @enum {string} */
+            readonly scope: "owner";
+            readonly activeCount: number;
+            readonly activeLimit: number;
+            /** @description Monotonic owner inventory revision as a decimal integer string. */
+            readonly revision: string;
+        };
+        readonly AllocateWalletRequest: {
+            /** @description Optional derivation profile. Defaults to the pinned semi-modular MA v2 profile. */
+            readonly deploymentProfile?: string;
+            /** @description Optional runtime/derivation network hint. Does not partition identity, quota or replay keys. */
+            readonly chainId?: components["schemas"]["ChainId"];
         };
         readonly CreateWalletRequest: {
             /** @description Salt as a decimal string (big-int). Determines the derived address together with the factory. */
@@ -4128,6 +4170,53 @@ export interface operations {
                 };
             };
             readonly 401: components["responses"]["Unauthorized"];
+        };
+    };
+    readonly allocateWallet: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                readonly "Idempotency-Key": string;
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["AllocateWalletRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Allocated or replayed global wallet identity, with current visibility. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Wallet"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            /** @description Idempotency key conflict. */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Global active wallet limit reached. */
+            readonly 429: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     readonly listWallets: {

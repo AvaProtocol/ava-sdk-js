@@ -19,7 +19,7 @@ import { Transport } from "../internal/transport";
  * **Auth:**
  * - `list` / `create` (preview resolve) — user JWT **or** partner
  *   assertion (`scope: read`, `sub` = owner EOA)
- * - update / withdraw / nonce / delegation / budget — user JWT only
+ * - createNext / update / withdraw / nonce / delegation / budget — user JWT only
  *   (partner assertions are refused on 7702)
  */
 export class WalletsResource {
@@ -45,14 +45,13 @@ export class WalletsResource {
    * GET /wallets — every smart wallet owned by the authenticated
    * EOA (JWT subject, or partner assertion `sub`).
    *
-   * Hidden wallets (`isHidden=true`) are excluded by default. The
-   * response is an envelope `{ data: Wallet[] }`, not a bare array.
+   * Derived identities are global across supported networks. Hidden wallets
+   * remain in `data` for archive/restore; `usage` reports the owner-wide active
+   * limit and inventory revision. A network hint selects runtime context only.
    *
-   * Wallet records are per chain, so the listing is too. `chainId` is
-   * optional: omitted, the gateway uses the JWT's `aud` chain, then its
-   * own default. Passing it lets one token read another chain's wallets
-   * without a second signature — the JWT proves EOA ownership, which is
-   * chain-independent.
+   * `chainId` is optional runtime context for network observations and a
+   * designated EOA. Changing it never filters derived identity membership,
+   * changes visibility, or creates another owner quota bucket.
    */
   list(opts?: { chainId?: number }): Promise<v4.WalletList> {
     return this.transport.request<v4.WalletList>({
@@ -71,9 +70,10 @@ export class WalletsResource {
    * `withdraw`) via the `initCode` field, so the smart wallet costs
    * zero gas until it's first used.
    *
-   * Per-owner cap is enforced by `max_wallets_per_owner` in the
-   * aggregator config; the call returns 429 `WALLETS_LIMIT_REACHED`
-   * when exceeded.
+   * The owner-wide active limit is shared across all supported networks.
+   * Archived wallets release a slot. Ensuring an existing identity preserves
+   * its visibility and works at capacity; new active identities return
+   * 429 `WALLETS_LIMIT_REACHED` when no slot is available.
    *
    * Preview-friendly: partner assertion with EOA `sub` is accepted
    * without a user JWT.
@@ -87,9 +87,29 @@ export class WalletsResource {
   }
 
   /**
+   * Allocate the next unused global salt. Requires an owner JWT and a stable
+   * client key for this logical creation. Retries, including across networks
+   * and server restarts, return the same identity with current visibility.
+   * Keys remain reserved for the lifetime of the owner inventory.
+   */
+  createNext(req: v4.AllocateWalletRequest & { idempotencyKey: string }): Promise<v4.Wallet> {
+    const { idempotencyKey, ...body } = req;
+    if (!idempotencyKey.trim() || idempotencyKey.length > 256) {
+      throw new Error("Allocation requires an idempotency key of 1 to 256 characters");
+    }
+    return this.transport.request<v4.Wallet>({
+      path: "/wallets:allocate",
+      method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
+      body,
+    });
+  }
+
+  /**
    * PATCH /wallets/{address} — partial update. The only mutable
-   * field today is `isHidden`, used by the Studio UI's hide/unhide
-   * wallet action. Keyed by **address**, not salt — callers that
+   * field today is `isHidden`. For derived identities archive/restore applies
+   * globally, and restoration requires a free owner-wide slot. Designated
+   * EOAs retain network-specific visibility. Keyed by **address**, not salt — callers that
    * still think in salts must look up the address first via
    * `create({ salt })`.
    */
@@ -135,12 +155,12 @@ export class WalletsResource {
    * It reflects mined state only: while an owner UserOp is pending, the
    * value is the nonce that UserOp already uses.
    *
-   * Wallet records are per chain, and the nonce is read on the same chain
-   * the wallet is looked up on. `chainId` is optional: omitted, the gateway
+   * Nonces remain per chain even though derived identities are global.
+   * `chainId` is optional: omitted, the gateway
    * uses the JWT's `aud` chain, then its own default. A chain the gateway
    * does not serve is treated as its default chain, for both the lookup
-   * and the read. A wallet with no record on the resulting chain is a 404,
-   * so pass `chainId` to read a wallet on a chain other than the token's.
+   * and the read. A registered global wallet can materialize its runtime row
+   * on first use. Pass `chainId` to read a nonce on a chain other than the token's.
    *
    * Used when an external signer needs to assemble a UserOp outside
    * the SDK's bundler path. Most callers don't need this directly —

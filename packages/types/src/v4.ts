@@ -89,6 +89,8 @@ export type SubmitExecutionResponse = components["schemas"]["SubmitExecutionResp
 
 export type Wallet = components["schemas"]["Wallet"];
 export type WalletList = components["schemas"]["WalletList"];
+export type WalletUsage = components["schemas"]["WalletUsage"];
+export type AllocateWalletRequest = components["schemas"]["AllocateWalletRequest"];
 export type CreateWalletRequest = components["schemas"]["CreateWalletRequest"];
 export type WithdrawRequest = components["schemas"]["WithdrawRequest"];
 export type WithdrawResponse = components["schemas"]["WithdrawResponse"];
