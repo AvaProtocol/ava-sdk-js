@@ -165,11 +165,13 @@ describe("Wallet Management Tests", () => {
 
   describe("wallets.list (v3 getWallets)", () => {
     test("includes a freshly created custom-salt wallet", async () => {
-      const salt = suiteSalt();
-      await client.wallets.create({ salt });
+      const { client: listClient } = await getIsolatedClient();
+      const salt = "1";
+      await listClient.wallets.list(); // Bootstrap the fresh owner's salt 0.
+      await listClient.wallets.create({ salt });
 
-      const list = await client.wallets.list();
-      expect(list.data.length).toBeGreaterThanOrEqual(2);
+      const list = await listClient.wallets.list();
+      expect(list.data).toHaveLength(2);
       expect(list.data.some((w) => w.salt === salt)).toBe(true);
     });
 
@@ -210,40 +212,25 @@ describe("Wallet Management Tests", () => {
       }
     });
 
-    // Needs a gateway serving a SECOND chain. The ava-sdk-js CI compose
-    // file is Sepolia-only; the local EigenLayer-AVS gateway serves
-    // Sepolia + Ethereum + Base. Base Sepolia (84532) was retired from
-    // that config. Gate on the same MULTICHAIN_TEST / TEST_ENV=railway
-    // flags expansion-chains-e2e.test.ts uses. The gateway-side
-    // guarantee is pinned hard in EigenLayer-AVS
-    // (TestListWalletsUsesQueryChainIdOverJwtAud); this is the wire check
-    // that the SDK actually sends `?chainId=`.
-    testMultichain("scopes the listing to chainId, not the JWT audience chain", async () => {
-      // Wallet records are per chain. This is the cross-chain read the
-      // Studio grant flow needs: one Sepolia-audience token reaching a
-      // second chain's wallets, with no second SIWE. Base (8453) is in
-      // the local gateway chains[] and on production; JWT aud is Sepolia.
+    // Needs a gateway serving Base and Sepolia. A network hint must retain
+    // the same derived identities and owner usage with one owner JWT.
+    testMultichain("returns the same global inventory for chainId and the JWT audience", async () => {
       const otherChain = Chains.BaseMainnet;
       expect(otherChain).not.toEqual(TEST_AUTH_CHAIN_ID);
 
-      // Its own owner: the assertion below is that the aud chain has NEVER
-      // seen this salt, and the suite pool recycles "0"/"1"/"2" — one of
-      // which an earlier test has already created on the aud chain.
       const { client: crossClient } = await getIsolatedClient();
-      // NOT "0": authenticating already derives the owner's default salt-"0"
-      // wallet on the aud chain, which would defeat the absence assertion
-      // below before this test creates anything.
-      const salt = "1";
+      const salt = "4";
       const onOtherChain = await crossClient.wallets.create({ salt, chainId: otherChain });
       expect(onOtherChain.address).toBeTruthy();
 
       const namedChain = await crossClient.wallets.list({ chainId: otherChain });
       expect(namedChain.data.some((w) => w.salt === salt)).toBe(true);
 
-      // The same token, no chainId: the aud chain's listing, which has
-      // never seen that salt.
       const audChain = await crossClient.wallets.list();
-      expect(audChain.data.some((w) => w.salt === salt)).toBe(false);
+      expect(audChain).toEqual(namedChain);
+      expect(audChain.data.find((wallet) => wallet.salt === salt)?.walletId).toBe(onOtherChain.walletId);
+      expect(audChain.usage).toMatchObject({ scope: "owner", activeCount: 1 });
+      await crossClient.wallets.update(onOtherChain.address, { isHidden: true });
     });
 
     // Same gating as the listing test above. getNonce looks the wallet up
@@ -254,8 +241,8 @@ describe("Wallet Management Tests", () => {
       const otherChain = Chains.BaseMainnet;
       expect(otherChain).not.toEqual(TEST_AUTH_CHAIN_ID);
 
-      // Its own owner, for the same reason as the listing test: the aud
-      // chain must never have seen this wallet.
+      // Only one network has a local runtime row initially. Exact global
+      // metadata makes the wallet readable on either configured network.
       const { client: crossClient } = await getIsolatedClient();
       const wallet = await crossClient.wallets.create({ salt: "1", chainId: otherChain });
 
@@ -265,29 +252,25 @@ describe("Wallet Management Tests", () => {
       // The full nonce is key << 64 | sequence, and the owner's key is 0x1.
       expect(BigInt(nonce) >> 64n).toBe(1n);
 
-      // The same token, no chainId: the aud chain has no record of it.
-      await expect(crossClient.wallets.getNonce(wallet.address)).rejects.toMatchObject({
-        status: 404,
-        code: "WALLETS_NOT_FOUND",
-      });
+      const audNonce = await crossClient.wallets.getNonce(wallet.address);
+      expect(BigInt(audNonce.nonce) >> 64n).toBe(1n);
+      await crossClient.wallets.update(wallet.address, { isHidden: true });
     });
 
-    test("returns wallets sorted by salt (lexicographic)", async () => {
+    test("returns wallets sorted numerically by salt", async () => {
       // Its own owner: these salts are not the suite pool's, and a fourth
       // distinct wallet on one owner is a 429 against production's cap of 3.
       const { client: lexClient } = await getIsolatedClient();
 
-      // Three salts whose lexicographic order differs from numeric order:
-      // "0" < "10" < "2". A fourth ("1") adds no signal and does not fit
-      // under the cap.
+      // Numeric order differs from lexicographic order: 0, 2, 10.
       for (const salt of ["10", "2", "0"]) {
         await lexClient.wallets.create({ salt });
       }
 
       const list = await lexClient.wallets.list();
       const salts = list.data.map((w) => w.salt ?? "");
-      const sorted = [...salts].sort((a, b) => a.localeCompare(b));
-      expect(salts).toEqual(sorted);
+      expect(salts).toEqual(["0", "2", "10"]);
+      for (const wallet of list.data) await lexClient.wallets.update(wallet.address, { isHidden: true });
     });
   });
 

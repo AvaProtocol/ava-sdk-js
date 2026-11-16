@@ -55,6 +55,35 @@ each template's amount. In CI the templates suite runs inside the core
 shard, on core's stack and grant, so two stacks never install the grant on
 the same on-chain wallet at once.
 
+## Global smart wallet inventory
+
+`tests/v4/core/walletInventory.test.ts` uses the real SDK transport against the
+configured HTTP gateway. It validates identity metadata, owner usage/revisions,
+archive/create/restore, non-contiguous and large salts, replay and owner
+isolation, archived-only lists, cross-network views, and JWT/partner boundaries.
+It does not mock `fetch`. It requires the global-inventory AVS API (#914).
+Capacity-boundary cases require `TIGHT_WALLET_CAP=1` and a gateway limit of 3;
+cross-network cases require `MULTICHAIN_TEST=1` with Base and Sepolia configured.
+
+To validate both companion PRs locally without deployed services or funds:
+
+```bash
+AVS_SOURCE_DIR=../EigenLayer-AVS-wallet-inventory yarn test:wallet-inventory:local
+```
+
+Use a source checkout containing `TestSDKWalletGatewayFixture`. The runner starts
+an isolated loopback gateway from that checkout, performs real partner/SIWE/JWT
+authentication, and runs nine new cases plus four updated wallet cases one at a
+time. It fails if any case is skipped or if HTTP evidence is missing. Each case
+has timestamped Jest and gateway logs under `logs/`. Ephemeral partner keys are
+kept in a private temporary file, and the fixture/database are stopped and
+removed afterwards.
+
+HTTP routing, auth, inventory storage and response decoding are exercised.
+Address derivation and nonce providers are deterministic in this local fixture;
+Alchemy/workers, on-chain deployment, grants and UserOps are outside its scope.
+Use the normal gateway environment for those checks.
+
 ## External template integration
 
 These opt-in suites compile an externally maintained template from its current

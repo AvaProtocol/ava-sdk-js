@@ -35,6 +35,25 @@ and `chainId` to the selected source wallet and network, and review the removal
 calldata. The owner sends the call; the SDK does not send it automatically.
 Wait for confirmation before preparing the budget again.
 
+## Global smart wallet allocation (REST)
+
+With an owner-authenticated `client`, allocate the next unused global salt:
+
+```typescript
+const creationKey = crypto.randomUUID(); // Persist once before the first request.
+const wallet = await client.wallets.createNext({ idempotencyKey: creationKey, chainId: 1 });
+```
+
+Keep the same key after a timeout or lost response, including a retry with a
+different network hint. Start a new key only for a new logical creation. Keys
+accept 1–256 printable ASCII characters without spaces. Validation failures
+reject the returned promise, just like API failures.
+
+Identities, visibility and the active limit belong to the EOA across supported
+networks. Archived wallets release active capacity, and replaying a key returns
+its original wallet with current visibility. This call does not deploy an
+account or move funds; balances, permissions and nonces remain network-specific.
+
 ## Archived 2.x documentation
 
 The sections below describe the 2.x gRPC client and are kept for users still on that line. The 3.x REST client documentation is tracked in a follow-up doc PR; in the meantime see the [CHANGELOG](./CHANGELOG.md) for what changed between 2.x and 3.x.
