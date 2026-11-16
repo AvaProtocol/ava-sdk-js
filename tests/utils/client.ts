@@ -40,7 +40,7 @@ export function testPrivateKey(): string {
 
 /**
  * Production (and any `TIGHT_WALLET_CAP=1` gateway) allows 3 smart
- * wallets per owner per chain. CI's docker gateway allows 2000, which
+ * simultaneously active identities per owner across networks. CI's docker gateway allows 2000, which
  * is why `nextTestSalt()` was a fine default there and a 429 here.
  */
 export function tightWalletCap(): boolean {
@@ -322,7 +322,7 @@ export async function buildAuthPayload(
  *     cannot land on yesterday's wallets.
  *
  * Salts stay above 1_000 so they never collide with user-driven wallets in
- * dev. Note CI `max_wallets_per_owner` is 2_000 per chain; production is 3,
+ * dev. CI's inventory limit is 2_000; production allows 3 active identities,
  * which is why {@link createSmartWallet} defaults to salt `"0"` under
  * {@link tightWalletCap} rather than minting a unique salt every call.
  */
@@ -357,7 +357,7 @@ export function nextTestSalt(): string {
   return String(saltCursor);
 }
 
-/** Production allows this many smart wallets per owner PER CHAIN. */
+/** Production allows this many simultaneously active identities per owner. */
 export const TIGHT_WALLET_CAP_LIMIT = 3;
 
 let suiteSaltCursor = 0;
@@ -366,9 +366,9 @@ let suiteSaltCursor = 0;
  * A salt from the suite's bounded pool: `"0" | "1" | "2"` under a tight cap,
  * `nextTestSalt()` otherwise.
  *
- * Production caps an owner at {@link TIGHT_WALLET_CAP_LIMIT} wallets per chain
- * and a suite file runs on ONE isolated EOA, so the file may only ever address
- * three distinct salts. `nextTestSalt()` is the opposite policy — a value no
+ * Production caps an owner at {@link TIGHT_WALLET_CAP_LIMIT} active identities
+ * globally. The bounded pool avoids exhausting simultaneous capacity in a
+ * shared suite; archived history and the salt number are not capped. `nextTestSalt()` is the opposite policy — a value no
  * other worker or run will reuse — which is right for CI (cap 2000) and fatal
  * against production: the fourth unique salt on one owner is a 429.
  *

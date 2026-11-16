@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  },
+  "include": [
+    "tests/v4/core/walletInventory.test.ts",
+    "tests/v4/core/wallet.test.ts",
+    "tests/utils/client.ts",
+    "tests/utils/matchers.ts"
+  ]
+}

@@ -39,7 +39,9 @@
     "test:external": "jest --config jest.external.config.cjs --runInBand",
     "test:external:contract": "jest --config jest.external.config.cjs --runInBand contract.test",
     "test:external:types": "tsc --project tsconfig.external.json",
-    "test:external:unit": "jest --config jest.external.config.cjs --runInBand tests/external-templates/unit"
+    "test:external:unit": "jest --config jest.external.config.cjs --runInBand tests/external-templates/unit",
+    "test:wallet-inventory:local": "node scripts/test-wallet-inventory-local.cjs",
+    "test:wallet-inventory:types": "tsc --noEmit --project tsconfig.wallet-inventory.json"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
