@@ -1,4 +1,4 @@
-import { APIError, Client } from "@avaprotocol/sdk-js";
+import { Client } from "@avaprotocol/sdk-js";
 
 const address = "0x1111111111111111111111111111111111111111";
 const identity = { address, salt: "4", walletId: "global-4", isHidden: false };
@@ -49,12 +49,11 @@ describe("global wallet inventory resource", () => {
       const { client } = makeClient({ type: "about:blank", title: "Refused", status, code }, status);
       await expect(client.wallets.createNext({ idempotencyKey: "add-1" })).rejects.toMatchObject({ code, status });
     }
-    expect(APIError).toBeDefined();
   });
 
-  it("rejects an empty allocation key before sending", () => {
+  it.each(["", " ", " key", "key ", "two keys", "添加-1", "key\nnext", "x".repeat(257)])("rejects an invalid header key %j as a promise before sending", async (idempotencyKey) => {
     const { client, fetchImpl } = makeClient(identity);
-    expect(() => client.wallets.createNext({ idempotencyKey: " " })).toThrow("idempotency key");
+    await expect(client.wallets.createNext({ idempotencyKey })).rejects.toThrow("idempotency key");
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

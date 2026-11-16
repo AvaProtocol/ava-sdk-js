@@ -91,11 +91,12 @@ export class WalletsResource {
    * client key for this logical creation. Retries, including across networks
    * and server restarts, return the same identity with current visibility.
    * Keys remain reserved for the lifetime of the owner inventory.
+   * Keys must contain 1–256 printable ASCII characters without spaces.
    */
-  createNext(req: v4.AllocateWalletRequest & { idempotencyKey: string }): Promise<v4.Wallet> {
+  async createNext(req: v4.AllocateWalletRequest & { idempotencyKey: string }): Promise<v4.Wallet> {
     const { idempotencyKey, ...body } = req;
-    if (!idempotencyKey.trim() || idempotencyKey.length > 256) {
-      throw new Error("Allocation requires an idempotency key of 1 to 256 characters");
+    if (typeof idempotencyKey !== "string" || idempotencyKey.length < 1 || idempotencyKey.length > 256 || /[^\x21-\x7e]/.test(idempotencyKey)) {
+      throw new Error("Allocation requires an idempotency key of 1 to 256 printable ASCII characters without spaces");
     }
     return this.transport.request<v4.Wallet>({
       path: "/wallets:allocate",
