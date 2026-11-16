@@ -552,6 +552,29 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/wallets:allocate": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Allocate the next global smart wallet identity
+         * @description Owner JWT required. Allocates the next unused salt under the owner-wide
+         *     active quota across all supported networks. Hidden wallets release a slot.
+         *     Idempotency keys are durable and owner-scoped; replay never creates another
+         *     identity or restores an archived one. No account is deployed by this call.
+         */
+        readonly post: operations["allocateWallet"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/wallets": {
         readonly parameters: {
             readonly query?: never;
@@ -564,12 +587,12 @@ export interface paths {
          * @description Preview wallet resolve. Authorize with a user Bearer JWT **or** a
          *     partner assertion (`scope: read`) whose `sub` is the owner EOA.
          *
-         *     Wallets are stored per chain, so the listing is per chain too. The
-         *     `chainId` query selects which one, on the same precedence as
-         *     `POST /wallets`: explicit value, then the JWT `aud` chain, then the
-         *     gateway default. A JWT minted for one chain can therefore list
-         *     another's wallets without a second signature — it proves EOA
-         *     ownership, which is chain-independent.
+         *     MA v2 identities and hidden state are global for the owner across all
+         *     supported networks. The list includes archived identities and owner-wide
+         *     active usage. The `chainId` query selects runtime context and designated
+         *     EOA records only; it never filters derived identity membership or creates
+         *     a separate active quota. Precedence is explicit hint, JWT audience, then
+         *     gateway default; no extra network-specific ownership signature is needed.
          */
         readonly get: operations["listWallets"];
         readonly put?: never;
@@ -579,6 +602,9 @@ export interface paths {
          *     address. POST (not GET) because it persists a wallet record server-side
          *     as a side effect of the derivation. Authorize with a user Bearer JWT
          *     **or** a partner assertion (`scope: read`) whose `sub` is the owner EOA.
+         *     Ensuring an existing identity preserves its hidden state and succeeds
+         *     at capacity. A new active identity requires a free owner-wide slot;
+         *     archived identities release capacity. The salt has no maximum of three.
          */
         readonly post: operations["createWallet"];
         readonly delete?: never;
@@ -604,7 +630,7 @@ export interface paths {
         readonly head?: never;
         /**
          * Update wallet properties
-         * @description Partial update; only fields present in the body are changed (e.g., `isHidden`).
+         * @description Derived-wallet visibility is global across supported networks. Restoring an archived wallet requires capacity under the owner-wide active limit. Designated EOAs remain network-scoped.
          */
         readonly patch: operations["updateWallet"];
         readonly trace?: never;
@@ -2434,6 +2460,10 @@ export interface components {
             readonly kind?: "eoa_7702";
             /** @description SMA-7702 implementation the EOA designates. Set when kind is eoa_7702. */
             readonly delegate?: components["schemas"]["EthereumAddress"];
+            /** @description Stable global derived-wallet identity, shared across supported networks. */
+            readonly walletId?: string;
+            /** @description Pinned MA v2 derivation profile, independent of network runtime state. */
+            readonly deploymentProfile?: string;
             readonly isHidden?: boolean;
             /** Format: int64 */
             readonly totalWorkflowCount?: number;
@@ -2448,6 +2478,21 @@ export interface components {
         };
         readonly WalletList: {
             readonly data: readonly components["schemas"]["Wallet"][];
+            readonly usage?: components["schemas"]["WalletUsage"];
+        };
+        readonly WalletUsage: {
+            /** @enum {string} */
+            readonly scope: "owner";
+            readonly activeCount: number;
+            readonly activeLimit: number;
+            /** @description Monotonic owner inventory revision as a decimal integer string. */
+            readonly revision: string;
+        };
+        readonly AllocateWalletRequest: {
+            /** @description Optional derivation profile. Defaults to the pinned semi-modular MA v2 profile. */
+            readonly deploymentProfile?: string;
+            /** @description Optional runtime/derivation network hint. Does not partition identity, quota or replay keys. */
+            readonly chainId?: components["schemas"]["ChainId"];
         };
         readonly CreateWalletRequest: {
             /** @description Salt as a decimal string (big-int). Determines the derived address together with the factory. */
@@ -4130,6 +4175,72 @@ export interface operations {
             readonly 401: components["responses"]["Unauthorized"];
         };
     };
+    readonly allocateWallet: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description A stable creation key of 1 to 256 printable ASCII characters without spaces. Reuse the exact key on retries. */
+                readonly "Idempotency-Key": string;
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["AllocateWalletRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Allocated or replayed global wallet identity, with current visibility. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Wallet"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            /** @description Idempotency key reuse, unresolved identity conflict, or salt exhaustion. */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Global active wallet limit reached. */
+            readonly 429: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Allocation failed. Retry with the same Idempotency-Key to recover a possibly committed result. */
+            readonly 500: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Derivation or storage is temporarily unavailable. Retain the same creation key for retries. */
+            readonly 503: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     readonly listWallets: {
         readonly parameters: {
             readonly query?: {
@@ -4145,7 +4256,7 @@ export interface operations {
         };
         readonly requestBody?: never;
         readonly responses: {
-            /** @description All wallets for the authenticated user. */
+            /** @description Global owner inventory including archived identities and active usage, plus any runtime-network designated EOA. */
             readonly 200: {
                 headers: {
                     readonly [name: string]: unknown;
@@ -4190,6 +4301,15 @@ export interface operations {
             };
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
+            /** @description Global active wallet limit reached; archive an identity before creating or restoring another. */
+            readonly 429: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     readonly updateWallet: {
@@ -4218,6 +4338,15 @@ export interface operations {
             };
             readonly 401: components["responses"]["Unauthorized"];
             readonly 404: components["responses"]["NotFound"];
+            /** @description Global active wallet limit reached; archive an identity before creating or restoring another. */
+            readonly 429: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     readonly withdrawWallet: {
