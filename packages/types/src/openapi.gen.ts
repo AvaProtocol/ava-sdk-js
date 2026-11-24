@@ -2795,6 +2795,15 @@ export interface components {
          *     unlike `required` in workflow mode. Its `nativeSpendCap` is ETH the
          *     workflow sends; it never includes self-funded gas, and its
          *     `nativeGasWei` is omitted. Present when the workflow moves funds.
+         *
+         *     `perRun` is for the network this simulation ran on (the request's
+         *     `chainId`), even when `status` and `required` report another chain
+         *     of a multi-chain workflow. A workflow whose sends are all on one
+         *     other chain reports that chain. Each amount is the token's whole
+         *     amount for the run: the greater of its fixed sends and what the
+         *     simulation sent. A token with a send whose amount is unknown has an
+         *     amount only when the simulation sent more than its fixed sends;
+         *     otherwise it has none and is listed in `perRunUnsizedTokens`.
          */
         readonly SessionAuthorization: {
             /**
@@ -2831,8 +2840,10 @@ export interface components {
             readonly perRun?: components["schemas"]["SessionPolicyNeed"];
             /**
              * @description Tokens one run transfers or approves without a one-run amount
-             *     in `perRun`: a split, a batch ceiling, or an amount the
-             *     simulation did not send. The caller asks the owner for one.
+             *     in `perRun`: a split, a batch ceiling, or a send whose amount
+             *     the simulation did not show. A token listed here has no amount
+             *     in `perRun`, even when some of its sends are fixed. The caller
+             *     asks the owner for one.
              */
             readonly perRunUnsizedTokens?: readonly components["schemas"]["EthereumAddress"][];
             /** @description One run's ETH sent has no amount in `perRun`. The caller asks the owner for one. */
