@@ -7,13 +7,14 @@ on:
       docker_image_tag:
         description: "Docker Image Tag of avaprotocol/avs-dev"
         required: false
-        default: "staging-fa3c606"
+        default: "v6.5.0"
 
 # Shared env for all jobs that need secrets
 env:
   TEST_ENV: "dev"
-  # Includes the workflow prerequisite guard and REST confirmation metadata.
-  DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'staging-fa3c606' }}
+  # v6.5.0 adds the global wallet inventory the core suite covers: the
+  # allocation endpoints and numeric salt order.
+  DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'v6.5.0' }}
 
 jobs:
   # ── Job 1: Check if tests should run ──────────────────────────────
