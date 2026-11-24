@@ -83,3 +83,10 @@ client.policies.prepareCancel("wallet", "id");
 client.policies.submitPreparation("wallet", "id", { signature: "0x", userOp: {} }, chain);
 // @ts-expect-error Budget replies have no legacy typed-data payload.
 legacySigner(prepared.typedData);
+// One run's need is reported beside `required`, never multiplied by the runs left.
+declare const verdict: v4.Schemas["SessionAuthorization"];
+const perRun: v4.Schemas["SessionPolicyNeed"] | undefined = verdict.perRun;
+const perRunUnsizedTokens: readonly string[] | undefined = verdict.perRunUnsizedTokens;
+const perRunNativeUnsized: boolean | undefined = verdict.perRunNativeUnsized;
+// @ts-expect-error An unsized ETH send is a JSON boolean, not prose.
+const invalidNativeUnsized: v4.Schemas["SessionAuthorization"] = { ...verdict, perRunNativeUnsized: "true" };
