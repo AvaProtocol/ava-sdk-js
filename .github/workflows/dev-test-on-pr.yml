@@ -96,6 +96,9 @@ jobs:
       TEST_STUB_HOST: host.docker.internal
       # Wins over Jest testPath inference in fundedWalletSalt().
       FUNDED_WALLET_SALT: ${{ matrix.funded_salt }}
+      # Must match partner_assertion_audience in config/gateway.yaml. The
+      # partner key itself is generated per job (see below).
+      PARTNER_ASSERTION_AUDIENCE: avs-gateway-local
       # Secrets
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       ECDSA_PRIVATE_KEY: ${{ secrets.ECDSA_PRIVATE_KEY }}
@@ -145,6 +148,22 @@ jobs:
       - name: Build SDK
         run: yarn build
 
+      # The gateway issues wallet JWTs only against a registered partner's
+      # assertion (EigenLayer-AVS #900). This job's gateway is its own, so a
+      # throwaway Ed25519 key registers the test partner: the public half
+      # goes into config/gateway.yaml, the seed to tests/utils/partner.ts.
+      - name: Generate a partner key for this stack
+        run: |
+          node -e '
+            const { generateKeyPairSync } = require("node:crypto");
+            const { appendFileSync } = require("node:fs");
+            const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+            const seed = privateKey.export({ format: "der", type: "pkcs8" }).subarray(-32).toString("base64");
+            const pub = publicKey.export({ format: "der", type: "spki" }).subarray(-32).toString("base64");
+            console.log(`::add-mask::${seed}`);
+            appendFileSync(process.env.GITHUB_ENV, `PARTNER_ASSERTION_PRIVATE_KEY=${seed}\nPARTNER_ASSERTION_PUBLIC_KEY=${pub}\n`);
+          '
+
       - name: Inject secrets into gateway + worker configs
         env:
           SESSION_SIGNER_PRIVATE_KEY: ${{ secrets.SESSION_SIGNER_PRIVATE_KEY }}
@@ -154,7 +173,7 @@ jobs:
           # EigenLayer-AVS #864 on refuse to start without a session signer,
           # so fail here with the cause rather than at the health wait.
           : "${SESSION_SIGNER_PRIVATE_KEY:?SESSION_SIGNER_PRIVATE_KEY secret is not set}"
-          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET ALCHEMY_API_KEY CONTROLLER_PRIVATE_KEY SESSION_SIGNER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY GOPLUS_APP_KEY GOPLUS_APP_SECRET CONTEXT_MEMORY_API_KEY
+          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET ALCHEMY_API_KEY CONTROLLER_PRIVATE_KEY SESSION_SIGNER_PRIVATE_KEY PARTNER_ASSERTION_PUBLIC_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY GOPLUS_APP_KEY GOPLUS_APP_SECRET CONTEXT_MEMORY_API_KEY
           for src in gateway worker-sepolia operator-sepolia; do
             envsubst < config/${src}.yaml > config/${src}.runtime.yaml
             echo "Generated config/${src}.runtime.yaml: $(wc -l < config/${src}.runtime.yaml) lines"

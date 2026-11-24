@@ -134,3 +134,18 @@ disable_gas_sponsorship: true
 # grant-less runners while production refused them. Keep it on so CI sees
 # what production does.
 session_policy_deploy_check: true
+
+# Gateways from EigenLayer-AVS #900 on issue wallet JWTs only against a
+# registered partner's auth:exchange assertion, bound to this audience.
+# CI generates a throwaway key per job (dev-test-on-pr.yml). Locally, set
+# PARTNER_ASSERTION_PUBLIC_KEY to the public half of
+# PARTNER_ASSERTION_PRIVATE_KEY before rendering gateway.runtime.yaml.
+partners:
+  - id: studio
+    public_keys:
+      - "${PARTNER_ASSERTION_PUBLIC_KEY}"
+    scopes:
+      - read
+      - auth:exchange
+    status: active
+partner_assertion_audience: "avs-gateway-local"

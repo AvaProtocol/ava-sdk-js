@@ -11,6 +11,8 @@ export TEST_PRIVATE_KEY=0x...                       # EOA for auth flow
 export PARTNER_ASSERTION_PRIVATE_KEY=...            # base64 Ed25519 seed
 export PARTNER_ASSERTION_ISSUER=studio              # optional, default studio
 export PARTNER_ASSERTION_AUDIENCE=avs-gateway-local # if gateway sets audience
+# config/gateway.yaml registers the public half of that key:
+export PARTNER_ASSERTION_PUBLIC_KEY=...             # base64 Ed25519 public key
 yarn test
 ```
 
