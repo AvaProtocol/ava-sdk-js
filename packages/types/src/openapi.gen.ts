@@ -70,6 +70,13 @@ export interface paths {
          *     chain). SDKs construct the message locally — there is no
          *     `GetSignatureFormat` endpoint.
          *
+         *     Requires `X-Partner-Assertion`, signed by a registered active partner
+         *     granted `auth:exchange`. The assertion must declare that scope and its
+         *     `sub` must match `ownerAddress`. Partner admission never replaces the
+         *     wallet signature. The issued JWT records the verified `partner_id`.
+         *     `partner_assertion_audience` must be configured; otherwise issuance
+         *     fails closed with `503 PARTNER_AUTH_AUDIENCE_REQUIRED`.
+         *
          *     The token expires at the message's `Expire At`, which may be at most
          *     48 hours from now. A message that expires later is refused with
          *     `AUTH_EXPIRY_TOO_FAR`.
@@ -1256,6 +1263,33 @@ export interface paths {
          *     Currently unauthenticated (public monitoring).
          */
         readonly get: operations["listOperators"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/networks": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List the networks this gateway serves
+         * @description Public, read-only. One row per configured chain, saying whether an
+         *     owner can sign a new or changed wallet budget there right now
+         *     (`walletBudgetSigning`): the preparation and signing switches are on
+         *     and the chain is in `wallet_budget_signing_chains` (Sepolia when that
+         *     list is empty). Clients offer budget review only where it is true, so
+         *     an owner never signs a budget the gateway would refuse at submission.
+         *     Unsigned preparation does not apply the chain list, so clients must
+         *     check before preparing.
+         */
+        readonly get: operations["listNetworks"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
@@ -2690,6 +2724,18 @@ export interface components {
         readonly OperatorList: {
             readonly data: readonly components["schemas"]["OperatorInfo"][];
         };
+        readonly NetworkInfo: {
+            readonly chainId: components["schemas"]["ChainId"];
+            /**
+             * @description An owner can sign a new or changed wallet budget on this chain now.
+             *     False when budget preparation or signing is off, or the chain is
+             *     not activated in `wallet_budget_signing_chains`.
+             */
+            readonly walletBudgetSigning: boolean;
+        };
+        readonly NetworkList: {
+            readonly data: readonly components["schemas"]["NetworkInfo"][];
+        };
         /** @description One contract the agent may call, scoped to selectors. */
         readonly AllowedAction: {
             readonly target: components["schemas"]["EthereumAddress"];
@@ -2741,6 +2787,27 @@ export interface components {
          * @description Opt-in simulate verdict. Returned only when `authorizationMode` is
          *     `report`. It does not replace step errors from anything other than
          *     grant coverage.
+         *
+         *     `perRun` is what one run of this workflow needs, in every mode:
+         *     budget, workflow grant, or no grant. It is sized for a single run
+         *     and filled from what this simulation sent, so a loop over an earlier
+         *     step's output has amounts. It is never multiplied by the runs left,
+         *     unlike `required` in workflow mode. Its `nativeSpendCap` is ETH the
+         *     workflow sends; it never includes self-funded gas, and its
+         *     `nativeGasWei` is omitted. Present when the workflow moves funds.
+         *
+         *     `perRun` is for the network this simulation ran on (the request's
+         *     `chainId`), even when `status` and `required` report another chain
+         *     of a multi-chain workflow. A workflow whose sends are all on one
+         *     other chain reports that chain, and only sends on that network
+         *     count. Each amount is the token's whole amount for the run: its
+         *     fixed sends, whether or not the simulation reached them, plus what
+         *     the simulation sent from each workflow node whose amount is not
+         *     fixed. When the simulation did not reach one of those nodes, for
+         *     example on a branch it didn't take, the token has no amount and is
+         *     listed in `perRunUnsizedTokens`. ETH follows the same rule. A
+         *     self-funded `MAX` transfer counts the value it sends, not the
+         *     network fee it reserves.
          */
         readonly SessionAuthorization: {
             /**
@@ -2774,6 +2841,17 @@ export interface components {
              */
             readonly needsUntil?: number;
             readonly required?: components["schemas"]["SessionPolicyNeed"];
+            readonly perRun?: components["schemas"]["SessionPolicyNeed"];
+            /**
+             * @description Tokens one run transfers or approves without a one-run amount
+             *     in `perRun`: a split, a batch ceiling, or a send whose amount
+             *     the simulation did not show. A token listed here has no amount
+             *     in `perRun`, even when some of its sends are fixed. The caller
+             *     asks the owner for one.
+             */
+            readonly perRunUnsizedTokens?: readonly components["schemas"]["EthereumAddress"][];
+            /** @description One run's ETH sent has no amount in `perRun`. The caller asks the owner for one. */
+            readonly perRunNativeUnsized?: boolean;
             readonly detail?: string;
         };
         /**
@@ -3513,7 +3591,17 @@ export interface operations {
             };
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
             readonly 429: components["responses"]["RateLimited"];
+            /** @description Partner JWT issuance is missing its gateway audience configuration. */
+            readonly 503: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     readonly listWorkflows: {
@@ -5266,6 +5354,26 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["OperatorList"];
+                };
+            };
+        };
+    };
+    readonly listNetworks: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Configured networks, sorted by chain ID. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["NetworkList"];
                 };
             };
         };
