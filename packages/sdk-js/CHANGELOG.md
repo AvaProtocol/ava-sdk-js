@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 5.4.0
+
+### Minor Changes
+
+- 9cdaadf: Expose one run's need on report-mode simulate verdicts: `SessionAuthorization.perRun`, `perRunUnsizedTokens` and `perRunNativeUnsized`. `perRun` is sized for a single run from what the simulation sent and is never multiplied by the runs left. The regenerated spec also adds the `GET /networks` types (`NetworkInfo`, `NetworkList`) and the auth exchange's 403 and 503 responses already on the gateway.
+
+### Patch Changes
+
+- Updated dependencies [9cdaadf]
+  - @avaprotocol/types@5.4.0
+
 ## 5.3.0
 
 ### Minor Changes
